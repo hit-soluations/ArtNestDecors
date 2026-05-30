@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Gate | ArtNest Access</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .login-card { max-width: 400px; margin: 120px auto; background: var(--bg-card); padding: 40px; border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h3 style="text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; text-align: center; color: var(--primary);">System Admin Login</h3>
+        <form id="loginForm">
+            <div class="premium-input-group">
+                <label>Security Access Token Key</label>
+                <input type="password" id="authAccessKey" required placeholder="Enter administrative passcode">
+            </div>
+            <button type="submit" class="cta-submit-btn" style="width: 100%; margin-top: 10px;">Verify Security Access</button>
+        </form>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('authAccessKey').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('artnest_token', data.token);
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Invalid configuration passcode token.');
+                }
+            } catch (err) {
+                alert('Authentication backend service offline.');
+            }
+        });
+    </script>
+
+   
+</body>
+</html>

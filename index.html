@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArtNestDecors | Luxury Architecture & Technical Installations</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/service-style.css">
+</head>
+<body>
+
+    <header>
+    <div class="nav-container">
+        <a href="index.html" class="logo-wrapper">
+            <img src="images/logo.png"  class="header-logo-img">
+            <span class="logo">ArtNest<span>Decors</span></span>
+        </a>
+        
+        <ul class="nav-links">
+            <li><a href="index.html" class="active">Home</a></li>
+            <li class="dropdown-container">
+                <span class="dropdown-trigger">Our Services</span>
+                <div class="dropdown-menu">
+                    <div class="dropdown-column">
+                        <h4>Interior & Finishes</h4>
+                        <ul>
+                            <li><a href="services/service-template.html?id=painting">Painting Services & Coatings</a></li>
+                            <li><a href="services/service-template.html?id=interior">Architectural Interior Designs</a></li>
+                            <li><a href="services/service-template.html?id=murals">Hand-Crafted Wall Art & Murals</a></li>
+                            <li><a href="services/service-template.html?id=signage">Thermoplastic & Epoxy Signs</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown-column">
+                        <h4>Production & Structural</h4>
+                        <ul>
+                            <li><a href="services/service-template.html?id=commercial">Commercial Sign Boards</a></li>
+                            <li><a href="services/service-template.html?id=automation">Electrical Automation & Wiring</a></li>
+                            <li><a href="services/service-template.html?id=waterfeatures">Artifacts, Rocks & Waterfalls</a></li>
+                            <li><a href="services/service-template.html?id=thematic">Thematic Event Properties</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            <li><a href="about.html">Contact</a></li>
+            <li><span id="userBadge" class="auth-status-badge">Console: Master Admin</span></li>
+            
+            <li class="nav-auth-social-group">
+                <a id="loginBtn" href="login.html" class="auth-btn">Sign In</a>
+                <button id="logoutBtn" class="auth-btn" onclick="logoutSession()" style="display:none;">Sign Out</button>
+                
+                <div class="header-socials">
+                    <a href="#" target="_blank" aria-label="Instagram" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" target="_blank" aria-label="Facebook" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" target="_blank" aria-label="WhatsApp" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</header>
+
+
+    <main class="container">
+        <section class="hero-banner">
+            <h1>Premium Architectural Solutions</h1>
+            <p>From fine painting finishes and tailored luxury interiors to advanced system engineering and custom landscape styling builds.</p>
+        </section>
+
+        <div class="carousel-viewport-container">
+            <div class="carousel-track-wrapper" id="homeHeroCarouselTrack">
+                <div class="carousel-slide-item is-active">
+                    <img src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&h=480&q=80" alt="Luxury Living Spaces">
+                    <div class="carousel-slide-caption">
+                        <h3>Luxury Interior Geometry</h3>
+                        <p>Architectural transformations balancing tailored textures and custom lighting mechanics.</p>
+                    </div>
+                </div>
+                <div class="carousel-slide-item">
+                    <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&h=480&q=80" alt="Exquisite Textured Coatings">
+                    <div class="carousel-slide-caption">
+                        <h3>Premium Surfaces & Finishes</h3>
+                        <p>High-end industrial protective layers combined with exquisite fine interior painting design treatments.</p>
+                    </div>
+                </div>
+                <div class="carousel-slide-item">
+                    <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&h=480&q=80" alt="Technical Engineering Automation">
+                    <div class="carousel-slide-caption">
+                        <h3>Smart System Integration</h3>
+                        <p>Advanced home relay installations, smart wiring architectures, and ambient electrical node distributions.</p>
+                    </div>
+                </div>
+                <div class="carousel-slide-item">
+                    <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&h=480&q=80" alt="Landscape Water Features">
+                    <div class="carousel-slide-caption">
+                        <h3>Exotic Landscape Architectures</h3>
+                        <p>Custom stone-carved structures paired with closed-loop engineering for biological waterfalls.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button class="carousel-control-arrow prev-trigger" id="carouselPrevBtn">&#10094;</button>
+            <button class="carousel-control-arrow next-trigger" id="carouselNextBtn">&#10095;</button>
+            <div class="carousel-indicator-dots-row" id="carouselDotsIndicatorRow"></div>
+        </div>
+       
+        <div class="services-alternating-container">
+            <div class="service-row">
+                <div class="service-row-img"><img src="https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=600&q=80" alt="Painting Services & Coatings"></div>
+                <div class="service-row-info">
+                    <h2>Painting Services & Coatings</h2>
+                    <p>Our industrial coatings and interior architectural finishes division provides precision texture treatments, environment-grade premium paints, and specialized multi-surface coatings tailored for luxury residences.</p>
+                    <a class="colored-action-link" href="services/service-template.html?id=painting">Explore Gallery &rarr;</a>
+                </div>
+            </div>
+
+            <div class="service-row">
+                <div class="service-row-img"><img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=600&q=80" alt="Architectural Interior Designs"></div>
+                <div class="service-row-info">
+                    <h2>Architectural Interior Designs</h2>
+                    <p>Complete layout transformations utilizing complex lighting workflows, customized spatial geometry scaling, ergonomics engineering, and choice materiality procurement parameters.</p>
+                    <a class="colored-action-link" href="services/service-template.html?id=interior">Explore Gallery &rarr;</a>
+                </div>
+            </div>
+
+            <div class="service-row">
+                <div class="service-row-img"><img src="https://images.unsplash.com/photo-1579783928621-7a13d66a62d1?auto=format&fit=crop&w=600&q=80" alt="Hand-Crafted Wall Art & Murals"></div>
+                <div class="service-row-info">
+                    <h2>Hand-Crafted Wall Art & Murals</h2>
+                    <p>Bespoke high-fidelity fine art paintings, custom dimension accent wall relief panels, and expressive murals drafted exclusively inside the studio to convert walls into signature canvas structural frameworks.</p>
+                    <a class="colored-action-link" href="services/service-template.html?id=murals">Explore Gallery &rarr;</a>
+                </div>
+            </div>
+
+            <div class="service-row">
+                <div class="service-row-img"><img src="https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=600&q=80" alt="Thermoplastic & Epoxy Signs"></div>
+                <div class="service-row-info">
+                    <h2>Thermoplastic & Epoxy Signs</h2>
+                    <p>High-end liquid resin applications, metallic floor patterns, crystal clear protective overlays, and specialized luminous signage components fabricated using ultra-durable precision chemical engineering.</p>
+                    <a class="colored-action-link" href="services/service-template.html?id=signage">Explore Gallery &rarr;</a>
+                </div>
+            </div>
+
+            <div class="service-row">
+                <div class="service-row-img"><img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80" alt="Commercial Sign Boards"></div>
+                <div class="service-row-info">
+                    <h2>Commercial Sign Boards</h2>
+                    <p>Scale brand sign architectures utilizing architectural metal grids, smart embedded illumination frameworks, custom typography panels, and exterior elements built to weather ambient conditions.</p>
+                    <a class="colored-action-link" href="services/service-template.html?id=commercial">Explore Gallery &rarr;</a>
+                </div>
+            </div>
+
+            <div class="service-row">
+                <div class="service-row-img"><img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=600&q=80" alt="Electrical Automation & Wiring"></div>
+                <div class="service-row-info">
+                    <h2>Electrical Automation & Wiring</h2>
+                    <p>High-grade automation nodes integration, invisible wiring infrastructures, custom panel arrangements, and smart home relay logic layouts built explicitly for unified control configurations.</p>
+                    <a class="colored-action-link" href="services/service-template.html?id=automation">Explore Gallery &rarr;</a>
+                </div>
+            </div>
+
+            <div class="service-row">
+                <div class="service-row-img"><img src="https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=600&q=80" alt="Artifacts, Rocks & Waterfalls"></div>
+                <div class="service-row-info">
+                    <h2>Artifacts, Rocks & Waterfalls</h2>
+                    <p>Precision hydro-engineering structural nodes connecting custom carved stone assemblies, closed-loop living natural waterfall matrices, and exotic artifact installation accents to create serene spaces.</p>
+                    <a class="colored-action-link" href="services/service-template.html?id=waterfeatures">Explore Gallery &rarr;</a>
+                </div>
+            </div>
+
+            <div class="service-row">
+                <div class="service-row-img"><img src="https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&w=600&q=80" alt="Thematic Event Properties"></div>
+                <div class="service-row-info">
+                    <h2>Thematic Event Properties</h2>
+                    <p>High-fidelity ephemeral set modeling, temporary premium interior installations, mechanical prop builds, and thematic display layout modules engineered for fast-deployment exhibition structures.</p>
+                    <a class="colored-action-link" href="services/service-template.html?id=thematic">Explore Gallery &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div class="footer-bottom-ribbon">
+        <p>&copy; 2026 ArtNest Decors. All Rights Reserved. Crafted with Precision.</p>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

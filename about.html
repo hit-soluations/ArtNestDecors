@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | ArtNestDecors</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/service-style.css">
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">ArtNest<span>Decors</span></a>
+            
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="dropdown-container">
+                    <span class="dropdown-trigger">Our Services</span>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-column">
+                            <h4>Interior & Finishes</h4>
+                            <ul>
+                                <li><a href="services/service-template.html?id=painting">Painting Services & Coatings</a></li>
+                                <li><a href="services/service-template.html?id=interior">Architectural Interior Designs</a></li>
+                                <li><a href="services/service-template.html?id=murals">Hand-Crafted Wall Art & Murals</a></li>
+                                <li><a href="services/service-template.html?id=signage">Thermoplastic & Epoxy Signs</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown-column">
+                            <h4>Production & Structural</h4>
+                            <ul>
+                                <li><a href="services/service-template.html?id=commercial">Commercial Sign Boards</a></li>
+                                <li><a href="services/service-template.html?id=automation">Electrical Automation & Wiring</a></li>
+                                <li><a href="services/service-template.html?id=waterfeatures">Artifacts, Rocks & Waterfalls</a></li>
+                                <li><a href="services/service-template.html?id=thematic">Thematic Event Properties</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="about.html" class="active">Contact</a></li>
+                <li><span id="userBadge" class="auth-status-badge">Console: Master Admin</span></li>
+                <li><a id="loginBtn" href="login.html" class="auth-btn">Sign In</a></li>
+                <li><button id="logoutBtn" class="auth-btn" onclick="logoutSession()" style="display:none;">Sign Out</button></li>
+            </ul>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top: 120px; text-align: center;">
+        <section style="background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 600px; margin: 0 auto;">
+            <h2>Consult Our Studio Architects</h2>
+            <p style="color: var(--text-muted); margin: 15px 0 30px;">Let's discuss how we can transform your residential or commercial space with elite installations.</p>
+            
+            <form onsubmit="event.preventDefault(); alert('Message routed successfully to studio managers.');" style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
+                <label>Full Name</label>
+                <input type="text" required style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                
+                <label>Project Requirements Description</label>
+                <textarea required style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-height: 120px;"></textarea>
+                
+                <button type="submit" class="auth-btn" style="background: var(--accent); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 4px; font-weight: 600;">Transmit Briefing Message</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
