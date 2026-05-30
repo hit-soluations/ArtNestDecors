@@ -40,11 +40,12 @@ psql postgresql://artnestdecors_db_user:dJ7IYCyKctx6OaktoZPyjpEDgBDhayKo@dpg-d8d
 
 ### 2. Seed Initial Users
 
-Run the Node.js seeder script:
+Run the Node.js seeder script using a local `.env` file for sensitive configuration:
 
 ```bash
-cd /workspaces/ArtNestDecors
-DATABASE_URL="postgresql://artnestdecors_db_user:dJ7IYCyKctx6OaktoZPyjpEDgBDhayKo@dpg-d8de8if7f7vs73c4qn60-a.ohio-postgres.render.com/artnestdecors_db" node Installer/seed.js
+cp .env.example .env
+# Edit .env and set DATABASE_URL to your own database connection string
+node Installer/seed.js
 ```
 
 This creates two users:
