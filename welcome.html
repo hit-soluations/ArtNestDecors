@@ -485,15 +485,12 @@
         <div class="tabs-container">
             <div class="tabs-header">
                 <button class="tab-btn active" data-tab="add-item">
-                    <i class="fas fa-plus-circle"></i> Add Item
-                </button>
-                <button class="tab-btn" data-tab="remove-item">
-                    <i class="fas fa-trash-alt"></i> Remove Item
+                    <i class="fas fa-cog"></i> Manage Items
                 </button>
             </div>
 
             <div class="tabs-content">
-                <!-- Add Item Tab -->
+                <!-- Manage Items Tab (upload + existing items) -->
                 <div id="add-item" class="tab-pane active">
                     <div id="addItemAlert"></div>
 
@@ -521,17 +518,11 @@
 
                         <button type="submit" class="submit-btn" id="submitBtn">Upload Image</button>
                     </form>
-                </div>
 
-                <!-- Remove Item Tab -->
-                <div id="remove-item" class="tab-pane">
                     <div id="removeItemAlert"></div>
-
                     <div class="form-group">
-                        <label for="serviceSelectRemove">Select Service to View Items</label>
-                        <select id="serviceSelectRemove" onchange="loadItemsForService(this.value)">
-                            <option value="">Select a service...</option>
-                        </select>
+                        <label for="serviceSelect">Current Service Items</label>
+                        <!-- items will update when serviceSelect changes -->
                     </div>
 
                     <div id="itemsContainer" class="items-grid"></div>
@@ -575,19 +566,20 @@
         let csrfToken = '';
 
         function populateServiceOptions(services) {
-            const selects = document.querySelectorAll('#serviceSelect, #serviceSelectRemove');
-            selects.forEach(select => {
-                // clear existing dynamic options
-                Array.from(select.querySelectorAll('option')).forEach(option => {
-                    if (option.value !== '') option.remove();
-                });
-                services.forEach(service => {
-                    const option = document.createElement('option');
-                    option.value = service.id;
-                    option.textContent = service.name;
-                    select.appendChild(option);
-                });
+            const select = document.getElementById('serviceSelect');
+            // clear existing dynamic options
+            Array.from(select.querySelectorAll('option')).forEach(option => {
+                if (option.value !== '') option.remove();
             });
+            services.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service.id;
+                option.textContent = service.name;
+                select.appendChild(option);
+            });
+
+            // when the serviceSelect changes, load its items
+            select.addEventListener('change', () => loadItemsForService(select.value));
         }
 
         // Fetch CSRF token and populate services
@@ -750,7 +742,7 @@
 
                 if (response.ok) {
                     showAlert('removeItemAlert', 'Item deleted successfully', 'success');
-                    const serviceId = document.getElementById('serviceSelectRemove').value;
+                    const serviceId = document.getElementById('serviceSelect').value;
                     loadItemsForService(serviceId);
                 } else {
                     showAlert('removeItemAlert', data.error || 'Failed to delete item', 'error');
