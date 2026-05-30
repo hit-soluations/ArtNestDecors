@@ -478,7 +478,7 @@
             margin-bottom: 40px;
         }
 
-        /* Upload Form Section */
+        /* Upload Section Styling */
         #addItemForm {
             background: rgba(247, 220, 180, 0.03);
             border: 1px solid rgba(247, 220, 180, 0.1);
@@ -490,7 +490,95 @@
             margin-top: 20px;
         }
 
+        /* Manage Images Layout: Two Column */
+        .manage-images-layout .tab-pane {
+            display: flex !important;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .upload-section {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .images-sidebar {
+            flex: 0 0 350px;
+            background: rgba(247, 220, 180, 0.02);
+            border: 1px solid rgba(247, 220, 180, 0.1);
+            border-radius: 8px;
+            padding: 24px;
+            max-height: calc(100vh - 400px);
+            overflow-y: auto;
+            position: sticky;
+            top: 20px;
+        }
+
+        .images-sidebar h3 {
+            margin: 0 0 20px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .images-sidebar h3 i {
+            font-size: 16px;
+        }
+
+        .images-sidebar .items-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 0;
+        }
+
+        .images-sidebar .item-card {
+            aspect-ratio: 1;
+            border-radius: 6px;
+        }
+
+        .images-sidebar .item-image {
+            height: 100%;
+            border-radius: 6px;
+        }
+
+        .images-sidebar .item-actions {
+            padding: 8px;
+            gap: 0;
+        }
+
+        .images-sidebar .delete-btn {
+            padding: 6px 8px;
+            font-size: 11px;
+        }
+
+        .images-sidebar .empty-state {
+            padding: 30px 10px;
+        }
+
+        .images-sidebar .loading-state {
+            padding: 20px 10px;
+            font-size: 12px;
+        }
+
         /* Responsive */
+        @media (max-width: 968px) {
+            .manage-images-layout .tab-pane {
+                flex-direction: column;
+            }
+
+            .images-sidebar {
+                flex: 1;
+                width: 100%;
+                position: static;
+                max-height: none;
+            }
+        }
+
         @media (max-width: 768px) {
             .dashboard-header {
                 flex-direction: column;
@@ -499,6 +587,14 @@
 
             .tabs-content {
                 padding: 20px;
+            }
+
+            .images-sidebar {
+                padding: 16px;
+            }
+
+            .images-sidebar .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             }
 
             .items-grid {
@@ -536,41 +632,45 @@
                 </button>
             </div>
 
-            <div class="tabs-content">
-                <!-- Manage Images Tab (existing images + upload) -->
+            <div class="tabs-content manage-images-layout">
+                <!-- Manage Images Tab (upload form + side panel with existing images) -->
                 <div id="add-item" class="tab-pane active">
-                    <div id="imagesAlert"></div>
+                    <!-- Main Upload Section -->
+                    <div class="upload-section">
+                        <div id="uploadAlert"></div>
 
-                    <div id="itemsContainer" class="items-grid"></div>
-
-                    <div id="uploadAlert"></div>
-
-                    <form id="addItemForm">
-                        <div class="form-group">
-                            <label for="serviceSelect">Service</label>
-                            <select id="serviceSelect" name="service" required>
-                                <option value="">Select a service...</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="imageInput">Upload Image</label>
-                            <div class="upload-preview" id="uploadPreview" onclick="document.getElementById('imageInput').click();">
-                                <div class="upload-icon">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                </div>
-                                <div class="upload-text">Click to upload or drag image here</div>
-                                <div style="font-size: 11px; color: rgba(197, 178, 180, 0.4); margin-top: 8px;">
-                                    JPG, PNG, WebP, GIF • Max 5MB
-                                </div>
+                        <form id="addItemForm">
+                            <div class="form-group">
+                                <label for="serviceSelect">Service</label>
+                                <select id="serviceSelect" name="service" required>
+                                    <option value="">Select a service...</option>
+                                </select>
                             </div>
-                            <input type="file" id="imageInput" name="image" accept="image/*" required>
-                        </div>
 
-                        <button type="submit" class="submit-btn" id="submitBtn" disabled>Upload Image</button>
-                    </form>
+                            <div class="form-group">
+                                <label for="imageInput">Upload Image</label>
+                                <div class="upload-preview" id="uploadPreview" onclick="document.getElementById('imageInput').click();">
+                                    <div class="upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="upload-text">Click to upload or drag image here</div>
+                                    <div style="font-size: 11px; color: rgba(197, 178, 180, 0.4); margin-top: 8px;">
+                                        JPG, PNG, WebP, GIF • Max 5MB
+                                    </div>
+                                </div>
+                                <input type="file" id="imageInput" name="image" accept="image/*" required>
+                            </div>
 
-                    <!-- duplicate section removed (images shown above upload form) -->
+                            <button type="submit" class="submit-btn" id="submitBtn" disabled>Upload Image</button>
+                        </form>
+                    </div>
+
+                    <!-- Side Panel: Existing Images -->
+                    <div class="images-sidebar">
+                        <h3><i class="fas fa-image"></i> Existing Images</h3>
+                        <div id="imagesAlert"></div>
+                        <div id="itemsContainer" class="items-grid"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -622,10 +722,12 @@
                 option.textContent = service.name;
                 select.appendChild(option);
             });
-
-            // when the serviceSelect changes, load its items
-            select.addEventListener('change', () => loadItemsForService(select.value));
         }
+
+        // Attach service change listener (once)
+        document.getElementById('serviceSelect').addEventListener('change', function() {
+            loadItemsForService(this.value);
+        });
 
         // Fetch CSRF token and populate services
         async function initializePage() {
@@ -745,21 +847,33 @@
         async function loadItemsForService(serviceId) {
             if (!serviceId) {
                 document.getElementById('itemsContainer').innerHTML = '';
+                document.getElementById('imagesAlert').innerHTML = '';
                 return;
             }
 
             try {
                 const container = document.getElementById('itemsContainer');
-                container.innerHTML = `<div class="loading-state" style="grid-column:1/-1;"><i class="fas fa-spinner fa-pulse"></i> Loading existing images...</div>`;
+                container.innerHTML = `<div class="loading-state"><i class="fas fa-spinner fa-pulse"></i> Loading images...</div>`;
 
-                const response = await fetch(`/api/items/${serviceId}`, { credentials: 'include' });
+                // Timeout after 8 seconds
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+                const response = await fetch(`/api/items/${serviceId}`, {
+                    credentials: 'include',
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
                 const items = await response.json();
 
                 if (items.length === 0) {
                     container.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-state">
                             <i class="fas fa-inbox"></i>
-                            <p>No images for this service yet</p>
+                            <p>No images yet</p>
                         </div>
                     `;
                 } else {
@@ -774,8 +888,12 @@
                         </div>
                     `).join('');
                 }
+                document.getElementById('imagesAlert').innerHTML = '';
             } catch (err) {
-                showAlert('imagesAlert', 'Failed to load images', 'error');
+                const container = document.getElementById('itemsContainer');
+                const errorMsg = err.name === 'AbortError' ? 'Request timed out' : 'Failed to load images';
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>${errorMsg}</p></div>`;
+                showAlert('imagesAlert', errorMsg, 'error');
             }
         }
 
