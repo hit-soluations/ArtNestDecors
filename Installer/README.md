@@ -1,113 +1,81 @@
 # ArtNest Decors - Database Installer
 
-This folder contains scripts for initial database setup on Render PostgreSQL.
+This folder now follows a modular installer architecture with a clean CLI facade and reusable database modules.
 
-## Database Schema
+## Installer Architecture
 
-The database includes the following tables:
+- `src/` contains reusable application logic
+  - `config.js` loads environment values
+  - `db.js` creates and exports the PostgreSQL connection pool
+  - `schema.js` applies the database schema from `schema.sql`
+  - `seeder.js` seeds application users safely
+- `scripts/` contains executable CLI entrypoints
+  - `scripts/init-db.js` initializes the database schema
+  - `scripts/seed-users.js` inserts the initial admin users
+- `schema.sql` defines the database tables and indexes
+- `package.json` defines installer-specific commands and dependencies
 
-### `users` Table
-Stores admin user credentials for authentication.
-- `id` - Primary key
-- `username` - Unique username
-- `passhash` - Bcrypt-hashed password
-- `created_at` - Timestamp of account creation
+## What this installer provides
 
-### `items` Table
-Stores portfolio images and metadata for each service.
-- `id` - Primary key
-- `service_id` - Service identifier (e.g., 'painting', 'interior', etc.)
-- `image_path` - Path to the uploaded image
-- `uploaded_by` - Username of the admin who uploaded
-- `created_at` - Timestamp of upload
+### Database schema
+- `users` table for admin credentials
+- `items` table for uploaded portfolio images
+- indexes for `username`, `service_id`, and `uploaded_by`
 
-**Constraint:** Maximum 5 items per service
+### Seeder
+- creates safe admin accounts if they do not already exist
+- uses bcrypt password hashing
 
-## Setup Steps
+## Usage
 
-### 1. Create the Schema
-
-Execute `schema.sql` on your PostgreSQL database using your preferred client (pgAdmin, psql, DBeaver, etc.):
-
-```sql
--- Copy and execute the entire contents of schema.sql
-```
-
-Or via CLI:
-```bash
-psql postgresql://artnestdecors_db_user:dJ7IYCyKctx6OaktoZPyjpEDgBDhayKo@dpg-d8de8if7f7vs73c4qn60-a.ohio-postgres.render.com/artnestdecors_db < schema.sql
-```
-
-### 2. Seed Initial Users
-
-Run the Node.js seeder script using a local `.env` file for sensitive configuration:
+1. Copy the root `.env.example` to `.env` and set your connection string:
 
 ```bash
 cp .env.example .env
-# Edit .env and set DATABASE_URL to your own database connection string
-node Installer/seed.js
 ```
 
-This creates two users:
-- **srujana** / **idly@dosa**
-- **akram** / **idly@dosa**
+2. Update `.env` with your local database credentials.
 
-## Security Features
+3. Install dependencies from the root or inside the `Installer` folder:
 
-### Authentication & Sessions
-- bcrypt password hashing with 10 salt rounds
-- Secure HTTP-only cookies with SameSite=strict
-- Server-side session management
-- CSRF token protection on all state-changing requests
+```bash
+npm install
+```
 
-### File Upload Security
-- Image file type validation (JPG, PNG, WebP, GIF only)
-- 5MB file size limit per image
-- Uploaded files stored outside web root
-- Secure file naming with random tokens
+4. Run the full initial database setup in one step:
 
-### Data Limits
-- Maximum 5 portfolio items per service
-- Services enforced via dropdown selection from server-side list
+```bash
+node Installer/setup.js
+```
 
-## Available Services
+If you want to run the steps separately instead:
 
-1. Painting Services & Coatings
-2. Architectural Interior Designs
-3. Hand-Crafted Wall Art & Murals
-4. Thermoplastic & Epoxy Signs
-5. Commercial Sign Boards
-6. Electrical Automation & Wiring
-7. Artifacts, Rocks & Waterfalls
-8. Thematic Event Properties
+```bash
+node Installer/scripts/init-db.js
+node Installer/scripts/seed-users.js
+```
+
+## Optional CLI shorthand
+
+If you prefer the installer package entrypoints:
+
+```bash
+cd Installer
+npm install
+npm run setup-db
+```
 
 ## Files
 
-- `schema.sql` - Database schema (tables, indexes)
-- `seed.js` - Node.js seeder script for initial users
-- `README.md` - This file
-
-## Admin Dashboard Features
-
-After login, admins access the dashboard at `/welcome` with two tabs:
-
-### Add Item Tab
-- Upload images for a selected service
-- Drag-and-drop support
-- Real-time image preview
-- Automatic validation (file type, size)
-- Service limit enforcement (max 5 items)
-
-### Remove Item Tab
-- View all items for a service
-- Delete items with confirmation
-- Physical file cleanup on delete
+- `schema.sql` - base database schema
+- `src/` - implementation modules
+- `scripts/` - CLI entrypoints
+- `package.json` - installer package definition
+- `README.md` - this file
 
 ## Notes
 
-- Setup scripts are run once during initial deployment
-- The main server (`server.js`) validates login credentials against existing users
-- File uploads are stored in the `/uploads` directory (created automatically)
-- CSRF tokens are required for all POST/DELETE requests for security
-- Session cookies expire after 24 hours
-- All database operations are performed by authenticated users only
+- Sensitive values must stay in `.env` and should never be checked into Git.
+- The installer is now designed for reuse, testing, and production deployment.
+ 
+Important: this repository should never contain live secrets. Keep only ` .env.example` in version control and create a local `Installer/.env` (ignored by git) when running installer scripts.

@@ -90,26 +90,35 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Initialize database schema for items
-async function ensureItemsTable() {
+// Initialize database schema for users and items
+async function ensureDatabaseSchema() {
   try {
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        passhash TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_users_username ON users (username);
+
       CREATE TABLE IF NOT EXISTS items (
         id SERIAL PRIMARY KEY,
         service_id TEXT NOT NULL,
         image_path TEXT NOT NULL,
         uploaded_by TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (uploaded_by) REFERENCES users(username)
+        FOREIGN KEY (uploaded_by) REFERENCES users(username) ON DELETE CASCADE
       );
+      CREATE INDEX IF NOT EXISTS idx_items_service ON items(service_id);
+      CREATE INDEX IF NOT EXISTS idx_items_uploaded_by ON items(uploaded_by);
     `);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_items_service ON items(service_id);`);
   } catch (err) {
-    console.error('Error creating items table:', err);
+    console.error('Error creating database schema:', err);
   }
 }
 
-ensureItemsTable();
+ensureDatabaseSchema();
 
 app.post('/login', async (req, res) => {
   const { username, passkey } = req.body;

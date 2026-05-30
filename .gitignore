@@ -1,6 +1,9 @@
 # Local environment variables
 .env
 
+# Installer local env
+Installer/.env
+
 # Node.js dependencies
 node_modules/
 
