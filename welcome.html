@@ -561,7 +561,34 @@
         const username = localStorage.getItem('artnest_user') || 'Admin';
         document.getElementById('userBadge').textContent = username.toUpperCase();
 
+        const FALLBACK_SERVICES = [
+            { id: 'painting', name: 'Painting Services & Coatings' },
+            { id: 'interior', name: 'Architectural Interior Designs' },
+            { id: 'murals', name: 'Hand-Crafted Wall Art & Murals' },
+            { id: 'signage', name: 'Thermoplastic & Epoxy Signs' },
+            { id: 'commercial', name: 'Commercial Sign Boards' },
+            { id: 'automation', name: 'Electrical Automation & Wiring' },
+            { id: 'waterfeatures', name: 'Artifacts, Rocks & Waterfalls' },
+            { id: 'thematic', name: 'Thematic Event Properties' }
+        ];
+
         let csrfToken = '';
+
+        function populateServiceOptions(services) {
+            const selects = document.querySelectorAll('#serviceSelect, #serviceSelectRemove');
+            selects.forEach(select => {
+                // clear existing dynamic options
+                Array.from(select.querySelectorAll('option')).forEach(option => {
+                    if (option.value !== '') option.remove();
+                });
+                services.forEach(service => {
+                    const option = document.createElement('option');
+                    option.value = service.id;
+                    option.textContent = service.name;
+                    select.appendChild(option);
+                });
+            });
+        }
 
         // Fetch CSRF token and populate services
         async function initializePage() {
@@ -575,17 +602,11 @@
                 if (!servicesRes.ok) throw new Error('Failed to fetch services');
                 const services = await servicesRes.json();
 
-                const selects = document.querySelectorAll('#serviceSelect, #serviceSelectRemove');
-                selects.forEach(select => {
-                    services.forEach(service => {
-                        const option = document.createElement('option');
-                        option.value = service.id;
-                        option.textContent = service.name;
-                        select.appendChild(option);
-                    });
-                });
+                populateServiceOptions(services);
             } catch (err) {
-                showAlert('addItemAlert', 'Failed to load services', 'error');
+                populateServiceOptions(FALLBACK_SERVICES);
+                showAlert('addItemAlert', 'Failed to load services from server. Using local fallback list.', 'warning');
+                console.error('initializePage error:', err);
             }
         }
 
@@ -636,6 +657,11 @@
             submitBtn.disabled = true;
 
             try {
+                if (!csrfToken) {
+                    showAlert('addItemAlert', 'Upload unavailable until page initialization completes.', 'error');
+                    return;
+                }
+
                 const response = await fetch('/api/items/upload', {
                     method: 'POST',
                     credentials: 'include',
@@ -645,7 +671,12 @@
                     body: formData
                 });
 
-                const data = await response.json();
+                let data;
+                if (response.headers.get('content-type')?.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    data = { error: await response.text() };
+                }
 
                 if (response.ok) {
                     showAlert('addItemAlert', 'Image uploaded successfully!', 'success');

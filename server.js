@@ -239,4 +239,22 @@ app.get('/logout', (req, res) => {
   });
 });
 
+// Global error handler for cleaner JSON responses on upload and CSRF failures
+app.use((err, req, res, next) => {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ error: 'File is too large. Maximum size is 5MB.' });
+  }
+
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: err.message });
+  }
+
+  if (err.code === 'EBADCSRFTOKEN') {
+    return res.status(403).json({ error: 'Invalid CSRF token.' });
+  }
+
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Server error' });
+});
+
 app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
