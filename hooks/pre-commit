@@ -1,0 +1,27 @@
+#!/bin/sh
+# Prevent accidental commits of local environment files
+# This script should be copied to .git/hooks/pre-commit (install via npm script)
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+
+for file in $STAGED_FILES; do
+  case "$file" in
+    # Root env files
+    .env|*.env|*.env.*|.env.local)
+      echo "\n[pre-commit] ERROR: Attempt to commit an environment file: $file"
+      echo "Keep secrets out of git. Use .env.example and local .env files instead.\n"
+      exit 1
+      ;;
+    # Installer local env
+    Installer/.env)
+      echo "\n[pre-commit] ERROR: Attempt to commit Installer/.env: $file"
+      echo "Keep secrets out of git. Add Installer/.env to .gitignore (already added) and remove from the commit.\n"
+      exit 1
+      ;;
+  esac
+done
+
+exit 0
