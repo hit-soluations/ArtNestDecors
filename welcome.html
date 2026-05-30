@@ -443,6 +443,53 @@
             margin: 0;
         }
 
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .loading-state i {
+            color: var(--accent);
+            font-size: 20px;
+        }
+
+        /* Alert - Warning Type */
+        .alert.warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+
+        /* Upload Section Styling */
+        #itemsContainer {
+            margin-bottom: 20px;
+        }
+
+        #itemsContainer:not(:empty) {
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(247, 220, 180, 0.1);
+            margin-bottom: 40px;
+        }
+
+        /* Upload Form Section */
+        #addItemForm {
+            background: rgba(247, 220, 180, 0.03);
+            border: 1px solid rgba(247, 220, 180, 0.1);
+            border-radius: 8px;
+            padding: 30px;
+        }
+
+        #uploadAlert {
+            margin-top: 20px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .dashboard-header {
@@ -485,14 +532,18 @@
         <div class="tabs-container">
             <div class="tabs-header">
                 <button class="tab-btn active" data-tab="add-item">
-                    <i class="fas fa-cog"></i> Manage Items
+                    <i class="fas fa-images"></i> Manage Images
                 </button>
             </div>
 
             <div class="tabs-content">
-                <!-- Manage Items Tab (upload + existing items) -->
+                <!-- Manage Images Tab (existing images + upload) -->
                 <div id="add-item" class="tab-pane active">
-                    <div id="addItemAlert"></div>
+                    <div id="imagesAlert"></div>
+
+                    <div id="itemsContainer" class="items-grid"></div>
+
+                    <div id="uploadAlert"></div>
 
                     <form id="addItemForm">
                         <div class="form-group">
@@ -516,16 +567,10 @@
                             <input type="file" id="imageInput" name="image" accept="image/*" required>
                         </div>
 
-                        <button type="submit" class="submit-btn" id="submitBtn">Upload Image</button>
+                        <button type="submit" class="submit-btn" id="submitBtn" disabled>Upload Image</button>
                     </form>
 
-                    <div id="removeItemAlert"></div>
-                    <div class="form-group">
-                        <label for="serviceSelect">Current Service Items</label>
-                        <!-- items will update when serviceSelect changes -->
-                    </div>
-
-                    <div id="itemsContainer" class="items-grid"></div>
+                    <!-- duplicate section removed (images shown above upload form) -->
                 </div>
             </div>
         </div>
@@ -595,9 +640,13 @@
                 const services = await servicesRes.json();
 
                 populateServiceOptions(services);
+                // enable upload once initialization completes
+                document.getElementById('submitBtn').disabled = false;
             } catch (err) {
                 populateServiceOptions(FALLBACK_SERVICES);
-                showAlert('addItemAlert', 'Failed to load services from server. Using local fallback list.', 'warning');
+                // still enable upload but warn user
+                document.getElementById('submitBtn').disabled = false;
+                showAlert('uploadAlert', 'Failed to load services from server. Using local fallback list.', 'warning');
                 console.error('initializePage error:', err);
             }
         }
@@ -650,7 +699,7 @@
 
             try {
                 if (!csrfToken) {
-                    showAlert('addItemAlert', 'Upload unavailable until page initialization completes.', 'error');
+                    showAlert('uploadAlert', 'Upload unavailable until initialization completes. Please wait a moment and retry.', 'error');
                     return;
                 }
 
@@ -671,7 +720,7 @@
                 }
 
                 if (response.ok) {
-                    showAlert('addItemAlert', 'Image uploaded successfully!', 'success');
+                    showAlert('uploadAlert', 'Image uploaded successfully!', 'success');
                     document.getElementById('addItemForm').reset();
                     document.getElementById('uploadPreview').classList.remove('has-image');
                     document.getElementById('uploadPreview').innerHTML = `
@@ -680,12 +729,15 @@
                         <div style="font-size: 11px; color: rgba(197, 178, 180, 0.4); margin-top: 8px;">JPG, PNG, WebP, GIF • Max 5MB</div>
                     `;
                 } else {
-                    showAlert('addItemAlert', data.error || 'Failed to upload image', 'error');
+                    showAlert('uploadAlert', data.error || 'Failed to upload image', 'error');
                 }
             } catch (err) {
-                showAlert('addItemAlert', 'Error uploading image', 'error');
+                showAlert('uploadAlert', 'Error uploading image', 'error');
             } finally {
                 submitBtn.disabled = false;
+                // refresh images for selected service after attempt
+                const svc = document.getElementById('serviceSelect').value;
+                if (svc) loadItemsForService(svc);
             }
         });
 
@@ -697,21 +749,23 @@
             }
 
             try {
+                const container = document.getElementById('itemsContainer');
+                container.innerHTML = `<div class="loading-state" style="grid-column:1/-1;"><i class="fas fa-spinner fa-pulse"></i> Loading existing images...</div>`;
+
                 const response = await fetch(`/api/items/${serviceId}`, { credentials: 'include' });
                 const items = await response.json();
 
-                const container = document.getElementById('itemsContainer');
                 if (items.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state" style="grid-column: 1/-1;">
                             <i class="fas fa-inbox"></i>
-                            <p>No items for this service yet</p>
+                            <p>No images for this service yet</p>
                         </div>
                     `;
                 } else {
                     container.innerHTML = items.map(item => `
                         <div class="item-card">
-                            <img src="${item.image_path}" alt="Item" class="item-image">
+                            <img src="${item.image_path}" alt="Image" class="item-image">
                             <div class="item-actions">
                                 <button class="delete-btn" onclick="deleteItem(${item.id})">
                                     <i class="fas fa-trash"></i> Delete
@@ -721,7 +775,7 @@
                     `).join('');
                 }
             } catch (err) {
-                showAlert('removeItemAlert', 'Failed to load items', 'error');
+                showAlert('imagesAlert', 'Failed to load images', 'error');
             }
         }
 
@@ -741,14 +795,14 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showAlert('removeItemAlert', 'Item deleted successfully', 'success');
+                    showAlert('imagesAlert', 'Image deleted successfully', 'success');
                     const serviceId = document.getElementById('serviceSelect').value;
                     loadItemsForService(serviceId);
                 } else {
-                    showAlert('removeItemAlert', data.error || 'Failed to delete item', 'error');
+                    showAlert('imagesAlert', data.error || 'Failed to delete image', 'error');
                 }
             } catch (err) {
-                showAlert('removeItemAlert', 'Error deleting item', 'error');
+                showAlert('imagesAlert', 'Error deleting image', 'error');
             }
         }
 
