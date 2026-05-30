@@ -12,40 +12,20 @@
 <body>
     <div class="login-card">
         <h3 style="text-transform: uppercase; letter-spacing: 1px; margin-bottom: 25px; text-align: center; color: var(--primary);">System Admin Login</h3>
-        <form id="loginForm">
+        <form id="loginForm" action="/login" method="POST">
             <div class="premium-input-group">
-                <label>Security Access Token Key</label>
-                <input type="password" id="authAccessKey" required placeholder="Enter administrative passcode">
+                <label>Username</label>
+                <input type="text" id="authUsername" name="username" required placeholder="Enter username">
             </div>
-            <button type="submit" class="cta-submit-btn" style="width: 100%; margin-top: 10px;">Verify Security Access</button>
+            <div class="premium-input-group">
+                <label>Passkey</label>
+                <input type="password" id="authPasskey" name="passkey" required placeholder="Enter passkey">
+            </div>
+            <button type="submit" class="cta-submit-btn" style="width: 100%; margin-top: 10px;">Login</button>
         </form>
     </div>
 
     <script src="js/auth.js"></script>
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const password = document.getElementById('authAccessKey').value;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    localStorage.setItem('artnest_token', data.token);
-                    window.location.href = 'index.html';
-                } else {
-                    alert('Invalid configuration passcode token.');
-                }
-            } catch (err) {
-                alert('Authentication backend service offline.');
-            }
-        });
-    </script>
 
    
 </body>
