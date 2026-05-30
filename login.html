@@ -348,7 +348,7 @@
 
             <div id="errorMessage" class="error-message"></div>
 
-            <form id="loginForm" class="login-form">
+            <form id="loginForm" class="login-form" action="/login" method="POST">
                 <div class="form-group">
                     <label for="authUsername">Username</label>
                     <div class="input-wrapper">
@@ -394,25 +394,49 @@
         const errorMsg = document.getElementById('errorMessage');
         const submitBtn = form.querySelector('button[type="submit"]');
 
+        async function loginUser(username, passkey) {
+            const payload = new URLSearchParams();
+            payload.append('username', username);
+            payload.append('passkey', passkey);
+
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: payload,
+                redirect: 'follow'
+            });
+
+            if (response.ok) {
+                window.location.href = '/welcome';
+                return;
+            }
+
+            const text = await response.text();
+            throw new Error(text || 'Login failed. Please check your credentials.');
+        }
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             errorMsg.classList.remove('show');
             errorMsg.textContent = '';
 
-            // Disable button and show loading state
             submitBtn.disabled = true;
             submitBtn.classList.add('loading');
             const originalText = submitBtn.textContent;
             submitBtn.textContent = '';
 
+            const username = document.getElementById('authUsername').value.trim();
+            const passkey = document.getElementById('authPasskey').value;
+
             try {
-                // Submit form naturally to backend
-                form.submit();
+                await loginUser(username, passkey);
             } catch (err) {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('loading');
                 submitBtn.textContent = originalText;
-                errorMsg.textContent = 'An error occurred. Please try again.';
+                errorMsg.textContent = err.message || 'An error occurred. Please try again.';
                 errorMsg.classList.add('show');
             }
         });
