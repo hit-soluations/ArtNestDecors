@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | ArtNest Decors</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1A1A1A 0%, #2a1a1f 50%, #1A1A1A 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-main);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(247, 220, 180, 0.05) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-30px) translateX(30px); }
+        }
+
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: var(--bg-card);
+            border: 1px solid rgba(247, 220, 180, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(61, 18, 23, 0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 28px;
+            color: var(--primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dashboard-header i {
+            color: var(--accent);
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-badge {
+            background: rgba(247, 220, 180, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(220, 53, 69, 0.3);
+        }
+
+        /* Tabs */
+        .tabs-container {
+            background: var(--bg-card);
+            border: 1px solid rgba(247, 220, 180, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(61, 18, 23, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .tabs-header {
+            display: flex;
+            gap: 0;
+            padding: 0;
+            border-bottom: 1px solid rgba(247, 220, 180, 0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tab-btn:hover {
+            color: var(--accent);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        /* Tab Content */
+        .tabs-content {
+            padding: 40px;
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Add Item Form */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input,
+        .form-group select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(247, 220, 180, 0.15);
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: var(--text-main);
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-group input::placeholder,
+        .form-group select::placeholder {
+            color: rgba(197, 178, 180, 0.5);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(247, 220, 180, 0.1);
+        }
+
+        .form-group select option {
+            background: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        /* Image Upload Preview */
+        .upload-preview {
+            position: relative;
+            border: 2px dashed rgba(247, 220, 180, 0.3);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+        }
+
+        .upload-preview:hover {
+            border-color: var(--accent);
+            background: rgba(247, 220, 180, 0.05);
+        }
+
+        .upload-preview.has-image {
+            border-color: var(--accent);
+            padding: 20px;
+        }
+
+        .upload-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 6px;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            background: linear-gradient(135deg, var(--accent), #f0d99a);
+            color: var(--bg-card);
+            border: none;
+            border-radius: 8px;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(247, 220, 180, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: left 0.3s ease;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(247, 220, 180, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            animation: slideDown 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert.success {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            color: #28a745;
+        }
+
+        .alert.error {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Items Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .item-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(247, 220, 180, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            group: item;
+        }
+
+        .item-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(247, 220, 180, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .item-actions {
+            padding: 12px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .delete-btn {
+            flex: 1;
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: rgba(220, 53, 69, 0.3);
+            border-color: #dc3545;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: var(--accent);
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .tabs-content {
+                padding: 20px;
+            }
+
+            .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .tab-btn {
+                font-size: 12px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1>
+                <i class="fas fa-th-large"></i>
+                Admin Dashboard
+            </h1>
+            <div class="user-info">
+                <span class="user-badge" id="userBadge">User</span>
+                <button class="logout-btn" onclick="logoutSession()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn active" data-tab="add-item">
+                    <i class="fas fa-plus-circle"></i> Add Item
+                </button>
+                <button class="tab-btn" data-tab="remove-item">
+                    <i class="fas fa-trash-alt"></i> Remove Item
+                </button>
+            </div>
+
+            <div class="tabs-content">
+                <!-- Add Item Tab -->
+                <div id="add-item" class="tab-pane active">
+                    <div id="addItemAlert"></div>
+
+                    <form id="addItemForm">
+                        <div class="form-group">
+                            <label for="serviceSelect">Service</label>
+                            <select id="serviceSelect" name="service" required>
+                                <option value="">Select a service...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="imageInput">Upload Image</label>
+                            <div class="upload-preview" id="uploadPreview" onclick="document.getElementById('imageInput').click();">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <div class="upload-text">Click to upload or drag image here</div>
+                                <div style="font-size: 11px; color: rgba(197, 178, 180, 0.4); margin-top: 8px;">
+                                    JPG, PNG, WebP, GIF • Max 5MB
+                                </div>
+                            </div>
+                            <input type="file" id="imageInput" name="image" accept="image/*" required>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submitBtn">Upload Image</button>
+                    </form>
+                </div>
+
+                <!-- Remove Item Tab -->
+                <div id="remove-item" class="tab-pane">
+                    <div id="removeItemAlert"></div>
+
+                    <div class="form-group">
+                        <label for="serviceSelectRemove">Select Service to View Items</label>
+                        <select id="serviceSelectRemove" onchange="loadItemsForService(this.value)">
+                            <option value="">Select a service...</option>
+                        </select>
+                    </div>
+
+                    <div id="itemsContainer" class="items-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                
+                // Deactivate all tabs
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+                
+                // Activate selected tab
+                btn.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Set user badge
+        const username = localStorage.getItem('artnest_user') || 'Admin';
+        document.getElementById('userBadge').textContent = username.toUpperCase();
+
+        let csrfToken = '';
+
+        // Fetch CSRF token and populate services
+        async function initializePage() {
+            try {
+                const tokenRes = await fetch('/api/csrf-token');
+                if (!tokenRes.ok) throw new Error('Failed to get CSRF token');
+                const tokenData = await tokenRes.json();
+                csrfToken = tokenData.csrfToken;
+
+                const servicesRes = await fetch('/api/services');
+                const services = await servicesRes.json();
+
+                const selects = document.querySelectorAll('#serviceSelect, #serviceSelectRemove');
+                selects.forEach(select => {
+                    services.forEach(service => {
+                        const option = document.createElement('option');
+                        option.value = service.id;
+                        option.textContent = service.name;
+                        select.appendChild(option);
+                    });
+                });
+            } catch (err) {
+                showAlert('addItemAlert', 'Failed to load services', 'error');
+            }
+        }
+
+        // Image upload preview
+        document.getElementById('imageInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const preview = document.getElementById('uploadPreview');
+
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    preview.classList.add('has-image');
+                    preview.innerHTML = `<img src="${event.target.result}" alt="Preview">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Drag and drop
+        const uploadPreview = document.getElementById('uploadPreview');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadPreview.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        uploadPreview.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            document.getElementById('imageInput').files = files;
+            const event = new Event('change', { bubbles: true });
+            document.getElementById('imageInput').dispatchEvent(event);
+        });
+
+        // Form submission
+        document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('image', document.getElementById('imageInput').files[0]);
+            formData.append('service', document.getElementById('serviceSelect').value);
+            formData.append('_csrf', csrfToken);
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/items/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('addItemAlert', 'Image uploaded successfully!', 'success');
+                    document.getElementById('addItemForm').reset();
+                    document.getElementById('uploadPreview').classList.remove('has-image');
+                    document.getElementById('uploadPreview').innerHTML = `
+                        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                        <div class="upload-text">Click to upload or drag image here</div>
+                        <div style="font-size: 11px; color: rgba(197, 178, 180, 0.4); margin-top: 8px;">JPG, PNG, WebP, GIF • Max 5MB</div>
+                    `;
+                } else {
+                    showAlert('addItemAlert', data.error || 'Failed to upload image', 'error');
+                }
+            } catch (err) {
+                showAlert('addItemAlert', 'Error uploading image', 'error');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Load items for service
+        async function loadItemsForService(serviceId) {
+            if (!serviceId) {
+                document.getElementById('itemsContainer').innerHTML = '';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/items/${serviceId}`);
+                const items = await response.json();
+
+                const container = document.getElementById('itemsContainer');
+                if (items.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1/-1;">
+                            <i class="fas fa-inbox"></i>
+                            <p>No items for this service yet</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = items.map(item => `
+                        <div class="item-card">
+                            <img src="${item.image_path}" alt="Item" class="item-image">
+                            <div class="item-actions">
+                                <button class="delete-btn" onclick="deleteItem(${item.id})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                showAlert('removeItemAlert', 'Failed to load items', 'error');
+            }
+        }
+
+        // Delete item
+        async function deleteItem(id) {
+            if (!confirm('Are you sure you want to delete this item?')) return;
+
+            try {
+                const response = await fetch(`/api/items/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert('removeItemAlert', 'Item deleted successfully', 'success');
+                    const serviceId = document.getElementById('serviceSelectRemove').value;
+                    loadItemsForService(serviceId);
+                } else {
+                    showAlert('removeItemAlert', data.error || 'Failed to delete item', 'error');
+                }
+            } catch (err) {
+                showAlert('removeItemAlert', 'Error deleting item', 'error');
+            }
+        }
+
+        // Show alert
+        function showAlert(elementId, message, type) {
+            const alertDiv = document.getElementById(elementId);
+            alertDiv.innerHTML = `
+                <div class="alert ${type}">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 5000);
+        }
+
+        // Initialize on page load
+        initializePage();
+    </script>
+</body>
+</html>
