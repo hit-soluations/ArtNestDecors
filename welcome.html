@@ -639,6 +639,9 @@
                 const response = await fetch('/api/items/upload', {
                     method: 'POST',
                     credentials: 'include',
+                    headers: {
+                        'X-CSRF-Token': csrfToken
+                    },
                     body: formData
                 });
 

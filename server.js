@@ -122,26 +122,26 @@ ensureDatabaseSchema();
 
 app.post('/login', async (req, res) => {
   const { username, passkey } = req.body;
-  if (!username || !passkey) return res.status(400).send('Missing credentials');
+  if (!username || !passkey) return res.status(400).json({ error: 'Missing credentials' });
 
   try {
     const result = await pool.query('SELECT id, username, passhash FROM users WHERE username = $1', [username]);
-    if (result.rowCount === 0) return res.status(401).send('Invalid username or passkey');
+    if (result.rowCount === 0) return res.status(401).json({ error: 'Invalid username or passkey' });
 
     const user = result.rows[0];
     if (!bcrypt.compareSync(passkey, user.passhash)) {
-      return res.status(401).send('Invalid username or passkey');
+      return res.status(401).json({ error: 'Invalid username or passkey' });
     }
 
     req.session.user = { id: user.id, username: user.username };
-    return res.redirect('/welcome');
+    return res.json({ success: true, username: user.username });
   } catch (err) {
     console.error(err);
-    return res.status(500).send('Server error');
+    return res.status(500).json({ error: 'Server error' });
   }
 });
 
-app.get('/welcome', requireAuth, csrfProtection, (req, res) => {
+app.get('/welcome', requireAuth, (req, res) => {
   const user = req.session.user.username;
   res.sendFile(path.join(__dirname, 'welcome.html'));
 });

@@ -405,7 +405,6 @@
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body: payload,
-                redirect: 'follow',
                 credentials: 'include'
             });
 
@@ -416,8 +415,15 @@
                 return;
             }
 
-            const text = await response.text();
-            throw new Error(text || 'Login failed. Please check your credentials.');
+            let errorMessage = 'Login failed. Please check your credentials.';
+            try {
+                const data = await response.json();
+                if (data && data.error) errorMessage = data.error;
+            } catch (e) {
+                const text = await response.text();
+                if (text) errorMessage = text;
+            }
+            throw new Error(errorMessage);
         }
 
         form.addEventListener('submit', async (e) => {
