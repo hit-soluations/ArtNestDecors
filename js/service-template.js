@@ -78,15 +78,21 @@ const serviceRegistry = {
     }
 };
 
+let currentServiceId = null;
+let isAdminSession = false;
+let csrfToken = null;
+
 // Standardized listener hook replacement over old window.onload block
 document.addEventListener("DOMContentLoaded", () => {
     initializeServicePageHydration();
     setupDropdownDirectoryInterceptors();
+    initializeServiceItems();
 });
 
 function initializeServicePageHydration() {
     const urlParams = new URLSearchParams(window.location.search);
     const currentId = urlParams.get('id');
+    currentServiceId = currentId;
 
     if (!currentId || !serviceRegistry[currentId]) {
         const workspace = document.getElementById('contentWorkspace');
@@ -97,8 +103,6 @@ function initializeServicePageHydration() {
     }
 
     const activeData = serviceRegistry[currentId];
-    
-    // Smoothly hydrate basic text elements down onto DOM target containers
     const heroImg = document.getElementById('serviceHeroImage');
     const categorySpan = document.getElementById('serviceCategory');
     const titleHeader = document.getElementById('serviceTitle');
@@ -108,34 +112,176 @@ function initializeServicePageHydration() {
     if (categorySpan) categorySpan.innerText = activeData.category;
     if (titleHeader) titleHeader.innerText = activeData.title;
     if (descPara) descPara.innerText = activeData.desc;
-    
     document.title = `${activeData.title} | ArtNestDecors`;
+}
 
-    // Checks local registry cache arrays if database profiles are missing
+function initializeServiceItems() {
+    const adminNode = document.getElementById('premiumFormExpansionNode');
+    const lockMessage = document.getElementById('premiumVaultLockMessage');
+
+    if (adminNode) adminNode.style.display = 'none';
+    if (lockMessage) lockMessage.style.display = 'none';
+
+    loadServiceItems(currentServiceId)
+        .then(() => {
+            if (!localStorage.getItem('artnest_token')) {
+                throw new Error('No admin token available.');
+            }
+            return fetch('/api/csrf-token');
+        })
+        .then(async (res) => {
+            if (!res.ok) throw new Error('Not authenticated.');
+            const data = await res.json();
+            csrfToken = data.csrfToken;
+            isAdminSession = true;
+            if (adminNode) adminNode.style.display = 'block';
+            if (lockMessage) lockMessage.style.display = 'none';
+        })
+        .catch(() => {
+            if (lockMessage) lockMessage.style.display = 'block';
+        });
+}
+
+async function loadServiceItems(serviceId) {
+    const galleryGrid = document.getElementById('runtimeActiveGalleryGrid');
+    const headingNode = document.getElementById('gallerySectionHeading');
+    const lockMessage = document.getElementById('premiumVaultLockMessage');
+
+    if (!galleryGrid || !serviceId) return [];
+
+    galleryGrid.innerHTML = '';
+    if (headingNode) headingNode.innerText = `${serviceRegistry[serviceId].title} - Project Portfolio Gallery`;
+
+    try {
+        const response = await fetch(`/api/items/${serviceId}`);
+        if (!response.ok) throw new Error('Failed to load service items');
+        const items = await response.json();
+
+        if (items.length > 0) {
+            renderServiceItems(items, serviceRegistry[serviceId].title);
+            if (lockMessage) lockMessage.style.display = 'none';
+            return items;
+        }
+
+        if (lockMessage && !isAdminSession) {
+            lockMessage.style.display = 'block';
+        }
+    } catch (err) {
+        console.warn('Service item fetch failed:', err);
+    }
+
+    const activeData = serviceRegistry[serviceId];
     renderFallbackMockGalleryGrid(activeData.galleryImages, activeData.title);
+    return [];
+}
+
+async function fetchAndRenderServiceGallery(serviceId) {
+    return loadServiceItems(serviceId);
+}
+
+function renderServiceItems(items, serviceTitle) {
+    const targetGridNode = document.getElementById('runtimeActiveGalleryGrid');
+    if (!targetGridNode) return;
+
+    targetGridNode.innerHTML = items.map(item => {
+        const adminControls = isAdminSession ? `\n            <button class="gallery-delete-btn" onclick="removeServiceItem(${item.id})">Remove</button>\n        ` : '';
+
+        return `
+            <div class="gallery-card-item">
+                <img src="${item.image_path}" alt="${serviceTitle} Portfolio Item">
+                ${adminControls}
+            </div>
+        `;
+    }).join('');
 }
 
 function renderFallbackMockGalleryGrid(imagesArray, serviceTitle) {
     const headingNode = document.getElementById('gallerySectionHeading');
-    // FIXED: Element ID targeted accurately to match main.js runtime specifications
     const targetGridNode = document.getElementById('runtimeActiveGalleryGrid');
-    
+
     if (!targetGridNode) return;
     if (headingNode) headingNode.innerText = `${serviceTitle} - Project Portfolio Gallery`;
-    
-    // Only hydrate mock static arrays if your live API database is empty/disconnected
-    if (targetGridNode.children.length === 0) {
-        if (!imagesArray || imagesArray.length === 0) {
-            targetGridNode.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px 0; font-style: italic;">No showcase photos have been uploaded to this production division yet.</p>`;
-            return;
-        }
-        
-        imagesArray.forEach((imageUrl) => {
-            const structuralCard = document.createElement('div');
-            structuralCard.className = 'gallery-card-item';
-            structuralCard.innerHTML = `<img src="${imageUrl}" alt="${serviceTitle} Finished Architecture Element Preview">`;
-            targetGridNode.appendChild(structuralCard);
+
+    if (!imagesArray || imagesArray.length === 0) {
+        targetGridNode.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px 0; font-style: italic;">No showcase photos have been uploaded to this production division yet.</p>`;
+        return;
+    }
+
+    imagesArray.forEach((imageUrl) => {
+        const structuralCard = document.createElement('div');
+        structuralCard.className = 'gallery-card-item';
+        structuralCard.innerHTML = `<img src="${imageUrl}" alt="${serviceTitle} Finished Architecture Element Preview">`;
+        targetGridNode.appendChild(structuralCard);
+    });
+}
+
+async function handleAssetUpload(event, serviceId) {
+    const file = event.target.files[0];
+    const statusNode = document.getElementById('assetUploadMessage');
+
+    if (!file || !serviceId) {
+        if (statusNode) statusNode.textContent = 'No file selected or no service chosen.';
+        return;
+    }
+
+    if (!isAdminSession || !csrfToken) {
+        if (statusNode) statusNode.textContent = 'Login required to upload assets.';
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('service', serviceId);
+    formData.append('_csrf', csrfToken);
+    formData.append('publicView', document.getElementById('adminPermissionVisitorView')?.checked ? 'true' : 'false');
+
+    try {
+        const response = await fetch('/api/items/upload', {
+            method: 'POST',
+            body: formData
         });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || 'Upload failed.');
+        }
+
+        if (statusNode) {
+            statusNode.textContent = 'Image uploaded successfully.';
+            statusNode.style.color = '#2b7a0b';
+        }
+        event.target.value = '';
+        await loadServiceItems(serviceId);
+    } catch (err) {
+        if (statusNode) {
+            statusNode.textContent = err.message || 'Upload failed.';
+            statusNode.style.color = '#c0392b';
+        }
+        console.error('Failed to upload item:', err);
+    }
+}
+
+async function removeServiceItem(itemId) {
+    if (!confirm('Are you sure you want to remove this image from the gallery?')) return;
+    if (!csrfToken) return;
+
+    try {
+        const response = await fetch(`/api/items/${itemId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-Token': csrfToken
+            }
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || 'Delete failed.');
+        }
+
+        await loadServiceItems(currentServiceId);
+    } catch (err) {
+        alert(err.message || 'Unable to delete item.');
+        console.error('Remove item error:', err);
     }
 }
 
@@ -143,38 +289,14 @@ function setupDropdownDirectoryInterceptors() {
     document.querySelectorAll('.dropdown-menu a').forEach(link => {
         link.addEventListener('click', function(e) {
             const targetUrl = this.getAttribute('href');
-            
-            // Fixed relative directory stacking links when clicked inside subfolder layers
+            if (!targetUrl || !targetUrl.includes('?id=')) return;
+
+            e.preventDefault();
+            const serviceId = new URLSearchParams(targetUrl.substring(targetUrl.indexOf('?'))).get('id');
             if (window.location.pathname.includes('/services/')) {
-                e.preventDefault();
-                const cleanQuery = targetUrl.substring(targetUrl.indexOf('?'));
-                window.location.search = cleanQuery; // Updates query parameter directly without duplicating folders
-            }
-        });
-    });
-}
-
-window.addEventListener('popstate', () => {
-    window.location.reload();
-});
-
-function setupDropdownDirectoryInterceptors() {
-    document.querySelectorAll('.dropdown-menu a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            const targetUrl = this.getAttribute('href');
-            
-            // Check if the link contains a service query string parameter
-            if (targetUrl.includes('?id=')) {
-                e.preventDefault();
-                const serviceId = new URLSearchParams(targetUrl.substring(targetUrl.indexOf('?'))).get('id');
-                
-                // If we are currently inside the services subfolder, reload using the direct query parameter
-                if (window.location.pathname.includes('/services/')) {
-                    window.location.search = `?id=${serviceId}`;
-                } else {
-                    // If we are on the root pages (index.html or about.html), path route cleanly down
-                    window.location.href = `services/service-template.html?id=${serviceId}`;
-                }
+                window.location.search = `?id=${serviceId}`;
+            } else {
+                window.location.href = `services/service-template.html?id=${serviceId}`;
             }
         });
     });

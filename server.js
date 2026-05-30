@@ -181,7 +181,7 @@ app.post('/api/items/upload', requireAuth, csrfProtection, upload.single('image'
 });
 
 // API to get items for a service
-app.get('/api/items/:service', requireAuth, async (req, res) => {
+app.get('/api/items/:service', async (req, res) => {
   const { service } = req.params;
   
   try {
