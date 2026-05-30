@@ -18,25 +18,6 @@ if (!DATABASE_URL) {
 
 const pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
-async function ensureSchema() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      username TEXT UNIQUE NOT NULL,
-      passhash TEXT NOT NULL
-    );
-  `);
-
-  const username = 'srujana';
-  const plain = 'idlydosa';
-  const { rowCount } = await pool.query('SELECT 1 FROM users WHERE username = $1', [username]);
-  if (rowCount === 0) {
-    const hash = bcrypt.hashSync(plain, 10);
-    await pool.query('INSERT INTO users (username, passhash) VALUES ($1, $2)', [username, hash]);
-    console.log('Seeded default user');
-  }
-}
-
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -85,11 +66,4 @@ app.get('/logout', (req, res) => {
   });
 });
 
-ensureSchema()
-  .then(() => {
-    app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
-  })
-  .catch((err) => {
-    console.error('Unable to initialize database schema', err);
-    process.exit(1);
-  });
+app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
