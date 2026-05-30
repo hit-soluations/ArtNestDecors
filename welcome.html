@@ -566,12 +566,13 @@
         // Fetch CSRF token and populate services
         async function initializePage() {
             try {
-                const tokenRes = await fetch('/api/csrf-token');
+                const tokenRes = await fetch('/api/csrf-token', { credentials: 'include' });
                 if (!tokenRes.ok) throw new Error('Failed to get CSRF token');
                 const tokenData = await tokenRes.json();
                 csrfToken = tokenData.csrfToken;
 
-                const servicesRes = await fetch('/api/services');
+                const servicesRes = await fetch('/api/services', { credentials: 'include' });
+                if (!servicesRes.ok) throw new Error('Failed to fetch services');
                 const services = await servicesRes.json();
 
                 const selects = document.querySelectorAll('#serviceSelect, #serviceSelectRemove');
@@ -637,6 +638,7 @@
             try {
                 const response = await fetch('/api/items/upload', {
                     method: 'POST',
+                    credentials: 'include',
                     body: formData
                 });
 
@@ -669,7 +671,7 @@
             }
 
             try {
-                const response = await fetch(`/api/items/${serviceId}`);
+                const response = await fetch(`/api/items/${serviceId}`, { credentials: 'include' });
                 const items = await response.json();
 
                 const container = document.getElementById('itemsContainer');
@@ -704,6 +706,7 @@
             try {
                 const response = await fetch(`/api/items/${id}`, {
                     method: 'DELETE',
+                    credentials: 'include',
                     headers: {
                         'X-CSRF-Token': csrfToken
                     }
