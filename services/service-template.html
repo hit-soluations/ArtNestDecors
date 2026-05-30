@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Workspace | ArtNestDecors</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/service-pages.css">
+</head>
+<body style="padding-top: 140px;">
+
+    <header>
+        <div class="nav-container">
+            <a href="../index.html" class="logo">ArtNest<span>Decors</span></a>
+            <ul class="nav-links">
+                <li><a href="../index.html">Home</a></li>
+                <li class="dropdown-container">
+                    <span class="dropdown-trigger">Our Services</span>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-column">
+                            <h4>Interior & Finishes</h4>
+                            <ul>
+                                <li><a href="../services/service-template.html?id=painting">Painting Services & Coatings</a></li>
+                                <li><a href="../services/service-template.html?id=interior">Architectural Interior Designs</a></li>
+                                <li><a href="../services/service-template.html?id=murals">Hand-Crafted Wall Art & Murals</a></li>
+                                <li><a href="../services/service-template.html?id=signage">Thermoplastic & Epoxy Signs</a></li>
+                            </ul>
+                        </div>
+                        <div class="dropdown-column">
+                            <h4>Production & Structural</h4>
+                            <ul>
+                                <li><a href="../services/service-template.html?id=commercial">Commercial Sign Boards</a></li>
+                                <li><a href="../services/service-template.html?id=automation">Electrical Automation & Wiring</a></li>
+                                <li><a href="../services/service-template.html?id=waterfeatures">Artifacts, Rocks & Waterfalls</a></li>
+                                <li><a href="../services/service-template.html?id=thematic">Thematic Event Properties</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="../about.html">Contact</a></li>
+                <li><span id="userBadge" class="auth-status-badge">Console: Master Admin</span></li>
+                <li><a id="loginBtn" href="../login.html" class="auth-btn">Sign In</a></li>
+                <li><button id="logoutBtn" class="auth-btn" onclick="logoutSession()" style="display:none;">Sign Out</button></li>
+            </ul>
+        </div>
+    </header>
+
+    <main class="container">
+        <a href="../index.html" class="back-btn">&larr; Back to Home</a>
+        
+        <div id="errorScreen" class="error-screen-box" style="display: none;">
+            <h2>Service Profile Not Found</h2>
+            <p>The parameter provided in the URL query does not match our centralized database registry.</p>
+        </div>
+
+        <div id="contentWorkspace">
+            <div class="detail-view-split">
+                <div class="detail-left-img">
+                    <img id="serviceHeroImage" src="" alt="">
+                </div>
+                <div class="detail-right-content">
+                    <span class="meta-tag" id="serviceCategory">Category</span>
+                    <h2 id="serviceTitle">Loading profile data...</h2>
+                    <p id="serviceDescription">Syncing systems metrics...</p>
+                    <a href="../about.html" class="colored-action-link">Consult Studio Architect &rarr;</a>
+                </div>
+            </div>
+
+            <div id="premiumFormExpansionNode" style="background:#FFF; padding:30px; border-radius:4px; border:1px dashed var(--accent); margin-bottom:4px; display:none;">
+                <h4 style="margin-bottom:15px; text-transform:uppercase; font-size:14px; letter-spacing:1px;">Admin Console: Upload Portfolio Asset</h4>
+                <div style="display:flex; gap:20px; align-items:center;">
+                    <input type="file" id="assetUploadInput" onchange="const id = new URLSearchParams(window.location.search).get('id'); handleAssetUpload(event, id)">
+                    <label><input type="checkbox" id="adminPermissionVisitorView" checked> Make Publicly Visible</label>
+                </div>
+            </div>
+
+            <div class="portfolio-gallery-section">
+                <h3 id="gallerySectionHeading">Division Portfolio Showcase</h3>
+                
+                <div id="premiumVaultLockMessage" style="display:none; background:#FFF5E6; padding:15px; color:#C5A880; font-weight:600; font-size:13px; border-radius:4px; text-align:center; margin-bottom:20px;">
+                    🔒 Premium Design Assets Vault is locked. Sign in to review unreleased blueprints.
+                </div>
+
+                <div id="runtimeActiveGalleryGrid" class="gallery-display-grid">
+                    </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="footer-bottom-ribbon">
+        <p>&copy; 2026 ArtNest Decors. All Rights Reserved. Crafted with Precision.</p>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/service-template.js"></script>
+    <script>
+        // Check local storage authorization status on template initialization to toggle admin forms
+        document.addEventListener("DOMContentLoaded", () => {
+            if(localStorage.getItem('artnest_token')) {
+                const adminNode = document.getElementById('premiumFormExpansionNode');
+                if(adminNode) adminNode.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
