@@ -22,7 +22,8 @@ app.use(cors({
   credentials: true
 }));
 
-
+// Required when running behind Render/Nginx proxies
+app.set('trust proxy', 1);
 
 const PORT = process.env.PORT || 8080;
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -65,6 +66,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'artnest-secret-change-me';
+
 
 app.use(session({
   secret: SESSION_SECRET,
