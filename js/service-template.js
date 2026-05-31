@@ -136,6 +136,9 @@ function initializeServiceItems() {
             isAdminSession = true;
             if (adminNode) adminNode.style.display = 'block';
             if (lockMessage) lockMessage.style.display = 'none';
+            if (currentServiceId) {
+                await loadServiceItems(currentServiceId);
+            }
         })
         .catch(() => {
             if (lockMessage) lockMessage.style.display = 'block';

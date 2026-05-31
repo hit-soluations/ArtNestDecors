@@ -730,11 +730,7 @@
             });
         }
 
-        // Attach service change listener (once)
-        document.getElementById('serviceSelect').addEventListener('change', function() {
-            loadItemsForService(this.value);
-        });
-
+        
         async function fetchCsrfToken() {
             try {
                 const tokenRes = await fetch('/api/csrf-token', { credentials: 'include' });
@@ -742,7 +738,7 @@
                 const tokenData = await tokenRes.json();
                 csrfToken = tokenData.csrfToken;
                 uploadReady = true;
-                document.getElementById('submitBtn').disabled = false;
+                updateUploadButtonState();
                 return true;
             } catch (err) {
                 uploadReady = false;
@@ -771,6 +767,14 @@
             }
         }
 
+        function updateUploadButtonState() {
+            const submitBtn = document.getElementById('submitBtn');
+            const serviceId = document.getElementById('serviceSelect').value;
+            const file = document.getElementById('imageInput').files[0];
+            const shouldEnable = Boolean(serviceId && file);
+            submitBtn.disabled = !shouldEnable;
+        }
+
         // Image upload preview
         document.getElementById('imageInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -783,7 +787,20 @@
                     preview.innerHTML = `<img src="${event.target.result}" alt="Preview">`;
                 };
                 reader.readAsDataURL(file);
+            } else {
+                preview.classList.remove('has-image');
+                preview.innerHTML = `
+                    <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="upload-text">Click to upload or drag image here</div>
+                    <div style="font-size: 11px; color: rgba(197, 178, 180, 0.4); margin-top: 8px;">JPG, PNG, WebP, GIF • Max 5MB</div>
+                `;
             }
+            updateUploadButtonState();
+        });
+
+        document.getElementById('serviceSelect').addEventListener('change', function() {
+            loadItemsForService(this.value);
+            updateUploadButtonState();
         });
 
         // Drag and drop
@@ -860,6 +877,7 @@
                         <div class="upload-text">Click to upload or drag image here</div>
                         <div style="font-size: 11px; color: rgba(197, 178, 180, 0.4); margin-top: 8px;">JPG, PNG, WebP, GIF • Max 5MB</div>
                     `;
+                    updateUploadButtonState();
                 } else {
                     showAlert('uploadAlert', data.error || 'Failed to upload image', 'error');
                 }
