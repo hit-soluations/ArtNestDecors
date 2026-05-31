@@ -52,6 +52,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 20px;
+    position: relative;
 }
 
 .logo {
@@ -275,6 +276,7 @@ header {
     justify-content: space-between;
     align-items: center;
     padding: 20px;
+    position: relative;
 }
 
 .logo {
@@ -795,6 +797,59 @@ header {
         padding: 0 25px;
     }
     
+    .nav-links {
+        display: flex;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        gap: 0;
+        background: var(--bg-card);
+        padding: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        z-index: 1000;
+    }
+    .nav-links.open {
+        max-height: 600px;
+    }
+    .nav-links li {
+        width: 100%;
+    }
+    .nav-links li a,
+    .dropdown-trigger {
+        display: block;
+        padding: 14px 20px;
+        width: 100%;
+        text-align: left;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        margin: 0;
+    }
+    .dropdown-menu {
+        display: none;
+        position: static;
+        width: 100%;
+        transform: none;
+        opacity: 1;
+        padding: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    .dropdown-menu.show {
+        display: grid;
+        padding: 12px 20px 18px;
+        background: #2A0B0E;
+        border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .mobile-menu-toggle {
+        display: block;
+        margin-left: 16px;
+    }
     .footer-bottom-ribbon {
         margin-top: 40px;
         padding: 20px 25px;

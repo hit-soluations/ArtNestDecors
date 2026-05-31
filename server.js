@@ -105,11 +105,13 @@ async function ensureDatabaseSchema() {
       CREATE TABLE IF NOT EXISTS items (
         id SERIAL PRIMARY KEY,
         service_id TEXT NOT NULL,
+        title TEXT,
         image_path TEXT NOT NULL,
         uploaded_by TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (uploaded_by) REFERENCES users(username) ON DELETE CASCADE
       );
+      ALTER TABLE items ADD COLUMN IF NOT EXISTS title TEXT;
       CREATE INDEX IF NOT EXISTS idx_items_service ON items(service_id);
       CREATE INDEX IF NOT EXISTS idx_items_uploaded_by ON items(uploaded_by);
     `);
@@ -160,10 +162,15 @@ app.get('/api/services', requireAuth, (req, res) => {
 app.post('/api/items/upload', requireAuth, csrfProtection, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No image provided' });
 
-  const { service } = req.body;
+  const { service, title } = req.body;
+  const trimmedTitle = title ? title.trim() : '';
   if (!service || !SERVICES.find(s => s.id === service)) {
     fs.unlinkSync(req.file.path);
     return res.status(400).json({ error: 'Invalid service' });
+  }
+  if (!trimmedTitle) {
+    fs.unlinkSync(req.file.path);
+    return res.status(400).json({ error: 'Image title is required' });
   }
 
   try {
@@ -177,8 +184,8 @@ app.post('/api/items/upload', requireAuth, csrfProtection, upload.single('image'
     // Insert into database
     const imagePath = `/uploads/${req.file.filename}`;
     await pool.query(
-      'INSERT INTO items (service_id, image_path, uploaded_by) VALUES ($1, $2, $3)',
-      [service, imagePath, req.session.user.username]
+      'INSERT INTO items (service_id, title, image_path, uploaded_by) VALUES ($1, $2, $3, $4)',
+      [service, trimmedTitle, imagePath, req.session.user.username]
     );
 
     res.json({ success: true, message: 'Image uploaded successfully', imagePath });
@@ -195,7 +202,7 @@ app.get('/api/items/:service', async (req, res) => {
   
   try {
     const result = await pool.query(
-      'SELECT id, image_path, created_at FROM items WHERE service_id = $1 ORDER BY created_at DESC',
+      'SELECT id, title, image_path, created_at FROM items WHERE service_id = $1 ORDER BY created_at DESC',
       [service]
     );
     res.json(result.rows);

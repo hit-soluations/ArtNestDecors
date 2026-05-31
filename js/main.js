@@ -244,6 +244,26 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (mobileMenuToggle && navLinks) {
+        mobileMenuToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            navLinks.classList.toggle('open');
+            mobileMenuToggle.classList.toggle('open');
+        });
+
+        navLinks.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        document.addEventListener('click', function() {
+            navLinks.classList.remove('open');
+            mobileMenuToggle.classList.remove('open');
+        });
+    }
+
     // --- 2. SAFE HOME HERO CAROUSEL ENGINE ---
     const track = document.getElementById('homeHeroCarouselTrack');
     const prevBtn = document.getElementById('carouselPrevBtn');

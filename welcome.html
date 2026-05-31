@@ -382,7 +382,6 @@
             overflow: hidden;
             transition: all 0.3s ease;
             position: relative;
-            group: item;
         }
 
         .item-card:hover {
@@ -423,6 +422,18 @@
         .delete-btn:hover {
             background: rgba(220, 53, 69, 0.3);
             border-color: #dc3545;
+        }
+
+        .item-title {
+            padding: 10px 12px 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: #f7e8d3;
+            text-align: center;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .empty-state {
@@ -537,23 +548,34 @@
         }
 
         .images-sidebar .item-card {
-            aspect-ratio: 1;
+            display: grid;
+            grid-template-rows: auto auto;
+            gap: 8px;
             border-radius: 6px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(247, 220, 180, 0.12);
         }
 
         .images-sidebar .item-image {
-            height: 100%;
-            border-radius: 6px;
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            aspect-ratio: 16 / 9;
+            display: block;
         }
 
         .images-sidebar .item-actions {
-            padding: 8px;
+            padding: 10px 12px 14px;
             gap: 0;
+            display: flex;
+            justify-content: center;
         }
 
         .images-sidebar .delete-btn {
-            padding: 6px 8px;
-            font-size: 11px;
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 12px;
         }
 
         .images-sidebar .empty-state {
@@ -648,6 +670,11 @@
                             </div>
 
                             <div class="form-group">
+                                <label for="imageTitle">Image Title</label>
+                                <input id="imageTitle" name="title" type="text" maxlength="100" placeholder="Enter image title" required>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="imageInput">Upload Image</label>
                                 <div class="upload-preview" id="uploadPreview" onclick="document.getElementById('imageInput').click();">
                                     <div class="upload-icon">
@@ -730,7 +757,7 @@
             });
         }
 
-        
+
         async function fetchCsrfToken() {
             try {
                 const tokenRes = await fetch('/api/csrf-token', { credentials: 'include' });
@@ -770,8 +797,9 @@
         function updateUploadButtonState() {
             const submitBtn = document.getElementById('submitBtn');
             const serviceId = document.getElementById('serviceSelect').value;
+            const title = document.getElementById('imageTitle')?.value.trim();
             const file = document.getElementById('imageInput').files[0];
-            const shouldEnable = Boolean(serviceId && file);
+            const shouldEnable = Boolean(serviceId && title && file);
             submitBtn.disabled = !shouldEnable;
         }
 
@@ -802,6 +830,7 @@
             loadItemsForService(this.value);
             updateUploadButtonState();
         });
+        document.getElementById('imageTitle').addEventListener('input', updateUploadButtonState);
 
         // Drag and drop
         const uploadPreview = document.getElementById('uploadPreview');
@@ -843,9 +872,11 @@
                 }
             }
 
+            const title = document.getElementById('imageTitle').value.trim();
             const formData = new FormData();
             formData.append('image', document.getElementById('imageInput').files[0]);
             formData.append('service', serviceId);
+            formData.append('title', title);
             formData.append('_csrf', csrfToken);
 
             submitBtn.disabled = true;
@@ -932,10 +963,11 @@
                 } else {
                     container.innerHTML = items.map(item => `
                         <div class="item-card">
-                            <img src="${item.image_path}" alt="Image" class="item-image">
+                            <img src="${item.image_path}" alt="${item.title || 'Uploaded image'}" class="item-image">
+                            <div class="item-title">${item.title ? item.title : 'Untitled'}</div>
                             <div class="item-actions">
-                                <button class="delete-btn" onclick="deleteItem(${item.id})">
-                                    <i class="fas fa-trash"></i> Delete
+                                <button type="button" class="delete-btn" onclick="deleteItem(${item.id})">
+                                    <i class="fas fa-trash"></i> Remove
                                 </button>
                             </div>
                         </div>
