@@ -9,8 +9,21 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const csrf = require('csurf');
+const cors = require('cors');
 
 const app = express();
+
+app.use(cors({
+  origin: [
+    'http://localhost:8080',
+    'https://artnestdecors.onrender.com'
+    
+  ],
+  credentials: true
+}));
+
+
+
 const PORT = process.env.PORT || 8080;
 const DATABASE_URL = process.env.DATABASE_URL;
 
@@ -64,6 +77,7 @@ app.use(session({
     sameSite: 'strict'
   }
 }));
+
 
 // CSRF protection
 const csrfProtection = csrf({ cookie: false });
