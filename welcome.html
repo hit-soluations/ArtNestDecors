@@ -669,7 +669,12 @@
                     <div class="images-sidebar">
                         <h3><i class="fas fa-image"></i> Existing Images</h3>
                         <div id="imagesAlert"></div>
-                        <div id="itemsContainer" class="items-grid"></div>
+                        <div id="itemsContainer" class="items-grid">
+                            <div class="empty-state">
+                                <i class="fas fa-info-circle"></i>
+                                <p>Select a service to view existing images.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -749,12 +754,6 @@
 
         // Fetch CSRF token and populate services
         async function initializePage() {
-            const hasToken = await fetchCsrfToken();
-            if (!hasToken) {
-                showAlert('uploadAlert', 'Unable to initialize secure upload. Please refresh the page.', 'error');
-                return;
-            }
-
             try {
                 const servicesRes = await fetch('/api/services', { credentials: 'include' });
                 if (!servicesRes.ok) throw new Error('Failed to fetch services');
@@ -764,6 +763,11 @@
                 populateServiceOptions(FALLBACK_SERVICES);
                 showAlert('uploadAlert', 'Failed to load services from server. Using local fallback list.', 'warning');
                 console.error('initializePage services error:', err);
+            }
+
+            const hasToken = await fetchCsrfToken();
+            if (!hasToken) {
+                showAlert('uploadAlert', 'Unable to initialize secure upload. Image upload is disabled until the page is refreshed.', 'error');
             }
         }
 
@@ -869,8 +873,13 @@
         // Load items for service
         async function loadItemsForService(serviceId) {
             if (!serviceId) {
-                document.getElementById('itemsContainer').innerHTML = '';
                 document.getElementById('imagesAlert').innerHTML = '';
+                document.getElementById('itemsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Select a service to view existing images.</p>
+                    </div>
+                `;
                 return;
             }
 
