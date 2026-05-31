@@ -809,15 +809,19 @@
         document.getElementById('addItemForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const submitBtn = document.getElementById('submitBtn');
             const serviceId = document.getElementById('serviceSelect').value;
+
             if (!serviceId) {
                 showAlert('uploadAlert', 'Please select a service before uploading.', 'error');
+                submitBtn.disabled = false;
                 return;
             }
             if (!csrfToken) {
                 const tokenReady = await fetchCsrfToken();
                 if (!tokenReady) {
                     showAlert('uploadAlert', 'Unable to initialize secure upload. Please refresh the page.', 'error');
+                    submitBtn.disabled = false;
                     return;
                 }
             }
@@ -827,7 +831,6 @@
             formData.append('service', serviceId);
             formData.append('_csrf', csrfToken);
 
-            const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
 
             try {
