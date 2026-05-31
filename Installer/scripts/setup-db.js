@@ -4,10 +4,11 @@ const fs = require('fs');
 const path = require('path');
 
 // Ensure a local .env exists in repo root. If missing, try to copy .env.example
-const repoRoot = path.join(__dirname, '..');
+console.log(__dirname);
+const repoRoot = path.join(__dirname, '..','..');
 const envPath = path.join(repoRoot, '.env');
 const envExamplePath = path.join(repoRoot, '.env.example');
-
+console.log(repoRoot , envPath, envExamplePath, );
 if (!fs.existsSync(envPath)) {
   if (fs.existsSync(envExamplePath)) {
     fs.copyFileSync(envExamplePath, envPath);

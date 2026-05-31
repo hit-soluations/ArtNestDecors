@@ -174,11 +174,11 @@ app.post('/api/items/upload', requireAuth, csrfProtection, upload.single('image'
   }
 
   try {
-    // Check if service already has 5 items
+    // Check if service already has 10 items
     const countResult = await pool.query('SELECT COUNT(*) as count FROM items WHERE service_id = $1', [service]);
-    if (parseInt(countResult.rows[0].count) >= 5) {
+    if (parseInt(countResult.rows[0].count) >= 10) {
       fs.unlinkSync(req.file.path);
-      return res.status(400).json({ error: 'Maximum 5 items allowed per service' });
+      return res.status(400).json({ error: 'Maximum 10 items allowed per service' });
     }
 
     // Insert into database
