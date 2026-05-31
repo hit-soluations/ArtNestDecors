@@ -241,7 +241,8 @@ async function handleAssetUpload(event, serviceId) {
     try {
         const response = await fetch('/api/items/upload', {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'include'
         });
 
         const result = await response.json();

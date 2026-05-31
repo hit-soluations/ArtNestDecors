@@ -361,7 +361,7 @@ async function fetchAndRenderServiceGallery(serviceId) {
 
     try {
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        const response = await fetch(`${API_BASE_URL}/assets/${serviceId}`, { headers });
+        const response = await fetch(`${API_BASE_URL}/assets/${serviceId}`, { credentials: 'include',headers });
         
         if (!response.ok) throw new Error("Database server unreachable or custom port disconnected.");
         const assets = await response.json();
@@ -406,7 +406,9 @@ async function handleAssetUpload(event, serviceId) {
         const response = await fetch(`${API_BASE_URL}/assets/upload`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
+            credentials: 'include',
             body: formData
+
         });
 
         if (response.ok) {
