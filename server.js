@@ -82,7 +82,7 @@ app.use(session({
 
 
 // CSRF protection
-const csrfProtection = csrf({ cookie: true });
+const csrfProtection = csrf({ cookie: false });
 
 app.use(express.static(path.join(__dirname)));
 
