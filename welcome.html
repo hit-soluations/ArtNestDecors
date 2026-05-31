@@ -708,7 +708,8 @@
             { id: 'thematic', name: 'Thematic Event Properties' }
         ];
 
-        let csrfToken = '';
+        let csrfToken = null;
+        let uploadReady = false;
 
         function populateServiceOptions(services) {
             const select = document.getElementById('serviceSelect');
@@ -729,27 +730,40 @@
             loadItemsForService(this.value);
         });
 
-        // Fetch CSRF token and populate services
-        async function initializePage() {
+        async function fetchCsrfToken() {
             try {
                 const tokenRes = await fetch('/api/csrf-token', { credentials: 'include' });
                 if (!tokenRes.ok) throw new Error('Failed to get CSRF token');
                 const tokenData = await tokenRes.json();
                 csrfToken = tokenData.csrfToken;
+                uploadReady = true;
+                document.getElementById('submitBtn').disabled = false;
+                return true;
+            } catch (err) {
+                uploadReady = false;
+                csrfToken = null;
+                console.error('fetchCsrfToken error:', err);
+                return false;
+            }
+        }
 
+        // Fetch CSRF token and populate services
+        async function initializePage() {
+            const hasToken = await fetchCsrfToken();
+            if (!hasToken) {
+                showAlert('uploadAlert', 'Unable to initialize secure upload. Please refresh the page.', 'error');
+                return;
+            }
+
+            try {
                 const servicesRes = await fetch('/api/services', { credentials: 'include' });
                 if (!servicesRes.ok) throw new Error('Failed to fetch services');
                 const services = await servicesRes.json();
-
                 populateServiceOptions(services);
-                // enable upload once initialization completes
-                document.getElementById('submitBtn').disabled = false;
             } catch (err) {
                 populateServiceOptions(FALLBACK_SERVICES);
-                // still enable upload but warn user
-                document.getElementById('submitBtn').disabled = false;
                 showAlert('uploadAlert', 'Failed to load services from server. Using local fallback list.', 'warning');
-                console.error('initializePage error:', err);
+                console.error('initializePage services error:', err);
             }
         }
 
@@ -791,19 +805,28 @@
         document.getElementById('addItemForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const serviceId = document.getElementById('serviceSelect').value;
+            if (!serviceId) {
+                showAlert('uploadAlert', 'Please select a service before uploading.', 'error');
+                return;
+            }
+            if (!csrfToken) {
+                const tokenReady = await fetchCsrfToken();
+                if (!tokenReady) {
+                    showAlert('uploadAlert', 'Unable to initialize secure upload. Please refresh the page.', 'error');
+                    return;
+                }
+            }
+
             const formData = new FormData();
             formData.append('image', document.getElementById('imageInput').files[0]);
-            formData.append('service', document.getElementById('serviceSelect').value);
+            formData.append('service', serviceId);
             formData.append('_csrf', csrfToken);
 
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
 
             try {
-                if (!csrfToken) {
-                    showAlert('uploadAlert', 'Upload unavailable until initialization completes. Please wait a moment and retry.', 'error');
-                    return;
-                }
 
                 const response = await fetch('/api/items/upload', {
                     method: 'POST',
