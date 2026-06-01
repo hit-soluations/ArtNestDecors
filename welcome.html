@@ -761,6 +761,12 @@
         async function fetchCsrfToken() {
             try {
                 const tokenRes = await fetch('/api/csrf-token', { credentials: 'include' });
+                // If the session is missing or expired, redirect to login
+                if (tokenRes.status === 401) {
+                    showAlert('uploadAlert', 'Session expired. Redirecting to login...', 'error');
+                    setTimeout(() => window.location.href = '/login.html', 1200);
+                    return false;
+                }
                 if (!tokenRes.ok) throw new Error('Failed to get CSRF token');
                 const tokenData = await tokenRes.json();
                 csrfToken = tokenData.csrfToken;
@@ -790,7 +796,7 @@
 
             const hasToken = await fetchCsrfToken();
             if (!hasToken) {
-                showAlert('uploadAlert', 'Unable to initialize secure upload. Image upload is disabled until the page is refreshed.', 'error');
+                showAlert('uploadAlert', 'Unable to initialize secure upload. Please sign in again to enable uploads.', 'error');
             }
         }
 
@@ -866,7 +872,8 @@
             if (!csrfToken) {
                 const tokenReady = await fetchCsrfToken();
                 if (!tokenReady) {
-                    showAlert('uploadAlert', 'Unable to initialize secure upload. Please refresh the page.', 'error');
+                    showAlert('uploadAlert', 'Unable to initialize secure upload. Redirecting to login...', 'error');
+                    setTimeout(() => window.location.href = '/login.html', 1200);
                     submitBtn.disabled = false;
                     return;
                 }
