@@ -255,7 +255,7 @@ app.get('/api/items/:service', async (req, res) => {
 });
 
 // API to delete an item
-app.delete('/api/items/:id', requireAuth, csrfProtection, async (req, res) => {
+app.delete('/api/items/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
 
   try {

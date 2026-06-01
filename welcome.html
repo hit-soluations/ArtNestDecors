@@ -865,6 +865,24 @@
 
                 if (response.ok) {
                     showAlert('uploadAlert', 'Image uploaded successfully!', 'success');
+                    
+                    // Optimistically add the uploaded image to the gallery immediately
+                    const container = document.getElementById('itemsContainer');
+                    const newImageHtml = `
+                        <div class="item-card">
+                            <img src="${data.imagePath}" alt="${title}" class="item-image">
+                            <div class="item-title">${title || 'Untitled'}</div>
+                            <div class="item-actions">
+                                <button type="button" class="delete-btn" disabled style="opacity:0.5;">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    if (container && !container.querySelector('.empty-state')) {
+                        container.insertAdjacentHTML('afterbegin', newImageHtml);
+                    }
+                    
                     document.getElementById('addItemForm').reset();
                     document.getElementById('uploadPreview').classList.remove('has-image');
                     document.getElementById('uploadPreview').innerHTML = `
@@ -873,6 +891,12 @@
                         <div style="font-size: 11px; color: rgba(197, 178, 180, 0.4); margin-top: 8px;">JPG, PNG, WebP, GIF • Max 5MB</div>
                     `;
                     updateUploadButtonState();
+                    
+                    // Reload the full list in the background to ensure consistency
+                    setTimeout(() => {
+                        const svc = document.getElementById('serviceSelect').value;
+                        if (svc) loadItemsForService(svc);
+                    }, 1500);
                 } else {
                     showAlert('uploadAlert', data.error || 'Failed to upload image', 'error');
                 }
@@ -903,9 +927,9 @@
                 const container = document.getElementById('itemsContainer');
                 container.innerHTML = `<div class="loading-state"><i class="fas fa-spinner fa-pulse"></i> Loading images...</div>`;
 
-                // Timeout after 8 seconds
+                // Timeout after 15 seconds
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
 
                 const response = await fetch(`/api/items/${serviceId}`, {
                     credentials: 'include',
@@ -953,10 +977,7 @@
             try {
                 const response = await fetch(`/api/items/${id}`, {
                     method: 'DELETE',
-                    credentials: 'include',
-                    headers: {
-                        'X-CSRF-Token': csrfToken
-                    }
+                    credentials: 'include'
                 });
 
                 const data = await response.json();
