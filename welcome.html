@@ -740,7 +740,7 @@
             { id: 'thematic', name: 'Thematic Event Properties' }
         ];
 
-        let csrfToken = null;
+        let csrfToken = window.__CSRF_TOKEN || null;
         let uploadReady = false;
 
         function populateServiceOptions(services) {
@@ -760,6 +760,13 @@
 
         async function fetchCsrfToken() {
             try {
+                // If token already injected by server, use it
+                if (csrfToken) {
+                    uploadReady = true;
+                    updateUploadButtonState();
+                    return true;
+                }
+
                 const tokenRes = await fetch('/api/csrf-token', { credentials: 'include' });
                 // If the session is missing or expired, redirect to login
                 if (tokenRes.status === 401) {

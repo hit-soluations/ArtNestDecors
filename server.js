@@ -77,7 +77,9 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none'
+    // Use 'none' in production when behind different origin (and secure required),
+    // but 'lax' locally so browsers accept the cookie on localhost over HTTP.
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   }
 }));
 
@@ -160,9 +162,17 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/welcome', requireAuth, (req, res) => {
-  const user = req.session.user.username;
-  res.sendFile(path.join(__dirname, 'welcome.html'));
+// Serve welcome page with injected CSRF token to avoid an extra token fetch
+app.get('/welcome', requireAuth, csrfProtection, (req, res) => {
+  fs.readFile(path.join(__dirname, 'welcome.html'), 'utf8', (err, data) => {
+    if (err) {
+      console.error('Failed to read welcome.html:', err);
+      return res.status(500).send('Server error');
+    }
+    const token = req.csrfToken();
+    const injected = data.replace('</head>', `<script>window.__CSRF_TOKEN = ${JSON.stringify(token)};</script></head>`);
+    res.send(injected);
+  });
 });
 
 // API to get CSRF token
