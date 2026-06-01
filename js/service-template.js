@@ -61,7 +61,7 @@ const serviceRegistry = {
         galleryImages: []
     },
     waterfeatures: { 
-        title: "Artifacts, Rocks & Waterfalls", 
+        title: "Artificial Rocks Waterfalls", 
         category: "Production & Structural", 
         image: "https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=600&q=80", 
         desc: "Precision hydro-engineering structural nodes connecting custom carved stone assemblies, closed-loop living natural waterfall matrices, and exotic artifact installation accents to create serene spaces.",
