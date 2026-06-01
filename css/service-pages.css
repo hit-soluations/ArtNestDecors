@@ -1,11 +1,12 @@
-
-
+/* ==========================================================================
+   1. DESIGN SYSTEM - FRAMED MAROON & CONTRAST FOREGROUND
+   ========================================================================== */
 :root {
     --primary: #FFFFFF;          /* Crisp high-contrast white for headers inside maroon panels */
     --accent: #d7a456;           /* Soft champagne gold accent */
     --accent-hover: #533d1f;     /* Deeper warm gold hover state */
-    --bg-light: #F4F5F6;         /* REMOVED full-page maroon: Now a clean, sophisticated gallery slate-white */
-    --bg-card: #3D1217;          /* Thick luxury maroon moved strictly to foreground structural panels */
+    --bg-light: #F4F5F6;         /* Sophisticated gallery slate-white background */
+    --bg-card: #3D1217;          /* Thick luxury maroon for foreground structural panels */
     --text-main: #F5F5F5;        /* Soft ivory for typography inside the maroon panels */
     --text-muted: #C5B2B4;       /* Muted ash-rose descriptions */
     --page-dark: #1A1A1A;        /* Dark slate for standalone out-of-panel typography */
@@ -13,6 +14,7 @@
     --border-radius: 4px;
     --border-color: rgba(61, 18, 23, 0.95);     /* Inner panel maroon framing lines */
     --gallery-color: #634a1b;
+    --header-height: 85px;       /* Fixed desktop height scale factor */
 }
 
 * {
@@ -24,33 +26,55 @@
 
 body {
     background-color: var(--bg-light);
-    color: var(--page-dark); /* Global body defaults to deep charcoal for readable light-mode space */
+    color: var(--page-dark);     /* Global body defaults to deep charcoal for readable space */
     line-height: 1.6;
     overflow-x: hidden;
-    padding-top: 100px; 
+    padding-top: var(--header-height) !important; /* Pushes layout contents down beneath fixed header */
 }
 
 /* ==========================================================================
-   2. GLOBAL NAVIGATION HEADER (Maroon Framed)
+   2. GLOBAL FIXED NAVIGATION HEADER (Maroon Framed Architecture)
    ========================================================================== */
 header {
     background-color: var(--bg-card);
     box-shadow: 0 4px 20px rgba(61, 18, 23, 0.15);
-    position: fixed;
+    position: fixed !important;
     top: 0;
+    left: 0;
     width: 100%;
-    z-index: 1000;
+    height: var(--header-height);
+    z-index: 99999;              /* High z-index priority layer stack overlay value */
     border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
 }
 
 .nav-container {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: 0 20px;
     position: relative;
+}
+
+/* --- Left Aligned Logo Wrapper Elements --- */
+.logo-wrapper {
+    display: flex;
+    align-items: center;         /* Vertically centers logo graphic and business text perfectly */
+    flex-direction: row;         /* Forces layout: logo graphic left, text name right */
+    gap: 12px;                   
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.header-logo-img {
+    height: 40px;                /* Precision dimension tracking scale */
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 .logo {
@@ -59,14 +83,15 @@ header {
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--primary);
-    text-decoration: none;
-    cursor: pointer;
+    margin: 0;
+    display: inline-block;
 }
 
 .logo span { 
     color: var(--accent); 
 }
 
+/* --- Center Main Link Elements --- */
 .nav-links {
     display: flex;
     list-style: none;
@@ -108,7 +133,46 @@ header {
     color: var(--accent);
 }
 
-/* --- NESTED DROPDOWN SYSTEM --- */
+/* --- Right Side: Unified Auth & Social Tray System --- */
+.nav-auth-social-group {
+    display: flex !important;
+    align-items: center !important;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+.header-socials {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Force layout tracking metrics onto social link blocks to prevent 0px flattening fails */
+.header-socials .social-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    color: var(--text-main) !important;
+    font-size: 15px !important;
+    text-decoration: none !important;
+    transition: var(--transition) !important;
+}
+
+.header-socials .social-icon:hover {
+    color: var(--accent) !important;
+    transform: translateY(-2px);
+}
+
+/* Disables navigation border underline mechanics from leaking onto social tray */
+.header-socials .social-icon::after {
+    display: none !important;
+}
+
+/* --- NESTED SERVICES DROPDOWN SYSTEM --- */
 .dropdown-container { 
     position: relative; 
 }
@@ -201,8 +265,9 @@ header {
     background-color: var(--accent); 
     color: var(--bg-card) !important;
 }
+
 /* ==========================================================================
-   ACTION & INTERACTION BUTTONS
+   3. ACTION & INTERACTION BUTTONS
    ========================================================================== */
 .back-btn { 
     display: inline-block; 
@@ -221,21 +286,19 @@ header {
     transform: translateX(-4px);
 }
 
-
 /* ==========================================================================
-   EDITORIAL VIEW SPLIT - WHITE BACKGROUND & BLACK TEXT WITH LITE MAROON FRAME
+   4. EDITORIAL VIEW SPLIT - WHITE BACKGROUND & BLACK/MAROON TEXT LAYERS
    ========================================================================== */
-
 .detail-view-split { 
     display: flex; 
     gap: 60px; 
     align-items: stretch; 
     margin-bottom: 50px; 
-    background: #FFFFFF;                  /* Pure White background */
+    background: #FFFFFF;                  /* Pure White background background canvas layout */
     padding: 50px; 
     border-radius: var(--border-radius); 
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.02); 
-    border: 1px solid #C5A880;            /* Gold line background/border frame */
+    border: 1px solid #C5A880;            /* Gold line frame */
 }
 
 /* --- IMAGE CONTAINMENT FRAME --- */
@@ -259,7 +322,7 @@ header {
     transform: scale(1.02);
 }
 
-/* --- TYPOGRAPHY AND TEXT LAYERS (ALL BLACK) --- */
+/* --- TYPOGRAPHY AND TEXT LAYERS (READABLE DEEP TINTS) --- */
 .detail-right-content { 
     flex: 1.2; 
     display: flex; 
@@ -271,7 +334,7 @@ header {
     font-size: 11px; 
     text-transform: uppercase; 
     letter-spacing: 3px; 
-    color: #4a0716ee;                       /* Solid Black sub-category tag text */
+    color: #4a0716ee;                      
     font-weight: 700; 
     margin-bottom: 8px; 
     display: block; 
@@ -281,12 +344,12 @@ header {
     font-size: 34px; 
     text-transform: uppercase; 
     letter-spacing: 1px; 
-    color: #4a0716ee;                       /* Solid Black Main Title Header */
+    color: #4a0716ee;                      
     margin-bottom: 20px; 
 }
 
 .detail-right-content p { 
-    color: #4a0716ee;                       /* Solid Black readable description text */
+    color: #4a0716ee;                      
     font-size: 15.5px; 
     margin-bottom: 25px; 
     line-height: 1.7; 
@@ -296,7 +359,7 @@ header {
 .detail-right-content .colored-action-link {
     display: inline-flex;
     align-items: center;
-    color: #4a0716ee;                       /* Solid Black action text color */
+    color: #4a0716ee;                      
     text-decoration: none;
     font-size: 13px;
     font-weight: 600;
@@ -316,29 +379,28 @@ header {
     left: 0; 
     width: 30px; 
     height: 2px;
-    background-color: #4a0716ee;            /* Solid Black layout indicator underline */
+    background-color: #4a0716ee;            
     transition: var(--transition);
 }
 
 .detail-right-content .colored-action-link:hover { 
-    color: #4a0716ee;                 /* Shifts to your brand Deep Maroon on hover */
+    color: #4a0716ee;                 
 }
 
 .detail-right-content .colored-action-link:hover::after { 
     width: 100%; 
-    background-color: #4a0716ee;      /* Underline matches brand Maroon on hover */
+    background-color: #4a0716ee;      
 }
 
 /* ==========================================================================
-   DYNAMIC CUSTOMER SHOWCASE GALLERY - GOLD & WHITE CONTAINER ARCHITECTURE
+   5. DYNAMIC CUSTOMER SHOWCASE GALLERY - GOLD & WHITE ARCHITECTURE
    ========================================================================== */
-
 .portfolio-gallery-section {
     background: #FFFFFF;                  /* Pure White background */
     padding: 40px;
     border-radius: var(--border-radius);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.02); /* Clean layout shadow depth */
-    border: 1px solid #C5A880;            /* Gold line background border frame */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.02); 
+    border: 1px solid #C5A880;            /* Gold line container bounding frame */
     margin-bottom: 60px;
 }
 
@@ -349,7 +411,7 @@ header {
     margin-bottom: 25px;
     padding-bottom: 12px;
     border-bottom: 1px solid #C5A880;     /* Gold layout separating line */
-    color: #4a0715d4;                       /* Solid black text */
+    color: #4a0715d4;                      
 }
 
 /* --- THE DISPLAY MASONRY MATRIX FRAME --- */
@@ -362,7 +424,7 @@ header {
 /* --- INDIVIDUAL IMAGE MATTE CARDS --- */
 .gallery-card-item {
     position: relative;
-    background: #FFFFFF;                  /* Pure White sub-canvas layer */
+    background: #FFFFFF;                  
     border: 1px solid #C5A880;            /* Synchronized Gold frame lines */
     border-radius: var(--border-radius);
     overflow: hidden;
@@ -373,9 +435,9 @@ header {
 
 /* --- DYNAMIC INTERACTION TRANSITION STATE --- */
 .gallery-card-item:hover {
-    transform: translateY(-4px);          /* Clean architectural lift effect */
-    border-color: var(--accent);          /* Deepens into your brand Maroon on hover */
-    box-shadow: 0 12px 30px rgba(74, 21, 33, 0.12); /* Subtle rich maroon tint drop-shadow */
+    transform: translateY(-4px);          /* Architectural lift effect */
+    border-color: var(--accent);          
+    box-shadow: 0 12px 30px rgba(74, 21, 33, 0.12); /* Subtle rich maroon drop shadow */
 }
 
 .gallery-card-item img {
@@ -387,18 +449,17 @@ header {
 }
 
 .gallery-card-item:hover img {
-    transform: scale(1.04);               /* Slow fluid cinematic zoom on hover */
+    transform: scale(1.04);               /* Slow fluid cinematic zoom */
 }
 
 /* ==========================================================================
-   UNIVERSAL FOOTER STYLING ENGINE
+   6. UNIVERSAL FOOTER STYLING ENGINE
    ========================================================================== */
-
 .main-footer {
-    background-color: #4A1521;           /* Main Brand Deep Maroon */
+    background-color: #4A1521;            /* Main Brand Deep Maroon */
     color: #FFFFFF;
     padding: 70px 0 0 0;
-    margin-top: auto;                    /* Pushes footer to bottom if page content is short */
+    margin-top: auto;                    /* Pushes footer down if content is short */
     border-top: 2px solid #C5A880;       /* Luxury Gold Accent Top Border Line */
     font-family: inherit;
 }
@@ -418,7 +479,7 @@ header {
     min-width: 250px;
 }
 
-/* --- COLUMN 1: BRAND LOGO & PROFILE STYLE --- */
+/* --- COLUMN 1: BRAND PROFILE LINK SYSTEMS --- */
 .footer-logo-wrapper {
     display: flex;
     align-items: center;
@@ -436,7 +497,7 @@ header {
 .footer-bio {
     font-size: 14px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.7);    /* Clean muted text readability */
+    color: rgba(255, 255, 255, 0.7);    
     margin-bottom: 25px;
 }
 
@@ -456,7 +517,7 @@ header {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: var(--transition, 0.3s ease);
+    transition: var(--transition);
 }
 
 .f-social-icon:hover {
@@ -465,7 +526,7 @@ header {
     transform: translateY(-3px);
 }
 
-/* --- COLUMNS 2 & 3: LINKS MATRICES --- */
+/* --- COLUMNS 2 & 3: DIRECOTRY MATRICES --- */
 .footer-column h4 {
     font-size: 15px;
     text-transform: uppercase;
@@ -490,23 +551,19 @@ header {
     color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     font-size: 14px;
-    transition: var(--transition, 0.3s ease);
+    transition: var(--transition);
     display: inline-block;
 }
 
 .footer-column ul li a:hover {
     color: #FFFFFF;
-    padding-left: 5px;                   /* Subtle elegant shifting nudge */
+    padding-left: 5px;                  /* Subtle elegant shifting nudge */
 }
 
-/* --- BOTTOM COPYRIGHT RIBBON --- */
-/* ==========================================================================
-   UPDATED FOOTER BOTTOM RIBBON - GREY BORDER & THICK WHITE TEXT
-   ========================================================================== */
-
+/* --- UPDATED FOOTER BOTTOM RIBBON - контраст grey border --- */
 .footer-bottom-ribbon {
     margin-top: 60px;
-    border-top: 1px solid #7F8C8D;       /* Slate Grey line background border */
+    border-top: 1px solid #7F8C8D;        /* Slate Grey bounding ribbon border */
     background-color: rgba(0, 0, 0, 0.15); 
     padding: 20px 40px;
     text-align: center;
@@ -514,63 +571,42 @@ header {
 
 .footer-bottom-ribbon p {
     font-size: 14px;
-    color: #570a0a;                      /* Pure White for extreme contrast */
-    font-weight: 500;                    /* Thicker text weight scale */
+    color: #FFFFFF;                      /* Explicit high contrast contrast color override */
+    font-weight: 500;                    /* Thicker typography weight matrix scale */
     margin: 0;
     letter-spacing: 0.75px;              /* Clean luxury tracking space */
 }
 
 /* ==========================================================================
-   LEFT-SIDE LOGO ALIGNMENT RULES
-   ========================================================================== */
-
-.logo-wrapper {
-    display: flex;
-    align-items: center;         /* Vertically centers logo and text perfectly */
-    flex-direction: row;         /* Forces the logo image to the left, text to the right */
-    gap: 12px;                   /* Gap spacing between logo graphic and text name */
-    text-decoration: none;
-}
-
-.header-logo-img {
-    height: 40px;                /* Controls your logo height size */
-    width: auto;
-    object-fit: contain;
-    display: block;
-}
-
-.logo {
-    display: inline-block;
-    margin: 0;                   /* Removes default margins to avoid misalignments */
-}
-
-/* ==========================================================================
-   CONSOLIDATED RESPONSIVE MOBILE OVERRIDE WITHIN YOUR STAGE MEDIA QUERY
-   ========================================================================== */
-
-
-/* ==========================================================================
-   RESPONSIVE MEDIA BREAKPOINTS
+   7. DYNAMIC MOBILE TOUCHSCREEN INTERFACES ENGINE (Responsive Media Breakpoints)
    ========================================================================== */
 @media (max-width: 900px) { 
     body {
-        padding-top: 80px;
-    }
-    .detail-view-split { 
-        flex-direction: column !important; 
-        padding: 25px; 
-        gap: 30px; 
-    } 
-    .gallery-display-grid {
-        grid-template-columns: 1fr;
+        padding-top: 80px !important;    /* Mobile offset metric adjustment */
     }
 
-      .footer-container {
-        flex-direction: column;
-        gap: 35px;
-        padding: 0 25px;
+    header {
+        height: 80px !important;
     }
-    
+
+    .nav-container {
+        padding: 0 20px;
+        height: 100%;
+    }
+
+    .logo-wrapper {
+        gap: 8px;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+
+    .header-logo-img {
+        height: 34px;
+    }
+
+    /* Transform main nav track into mobile panel slide drawer layout architecture */
     .nav-links {
         display: flex;
         position: absolute;
@@ -585,22 +621,29 @@ header {
         overflow: hidden;
         transition: max-height 0.3s ease;
         z-index: 1000;
+        border-bottom: 2px solid var(--accent);
     }
+
     .nav-links.open {
         max-height: 600px;
+        overflow-y: auto;
     }
+
     .nav-links li {
         width: 100%;
     }
+
     .nav-links li a,
     .dropdown-trigger {
         display: block;
         padding: 14px 20px;
         width: 100%;
         text-align: left;
-        border-top: 1px solid rgba(255,255,255,0.08);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
         margin: 0;
     }
+
+    /* Flatten out services mega dropdown matrix seamlessly into vertical stack */
     .dropdown-menu {
         display: none;
         position: static;
@@ -614,211 +657,77 @@ header {
         grid-template-columns: 1fr;
         gap: 0;
     }
+
     .dropdown-menu.show {
         display: grid;
         padding: 12px 20px 18px;
         background: rgba(61, 18, 23, 0.95);
-        border-top: 1px solid rgba(255,255,255,0.08);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .mobile-menu-toggle {
-        display: block;
-        margin-left: 16px;
+
+    /* Re-align the Right Tray Cluster securely inside mobile navigation drawer view */
+    .nav-auth-social-group {
+        display: none !important;        /* Controlled by drawer layout trigger logic status below */
+        flex-direction: column;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.15);
+        padding: 10px 0 20px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        gap: 15px;
     }
-    .footer-bottom-ribbon {
-        margin-top: 40px;
-        padding: 20px 25px;
+
+    /* Pull elements inside the active sliding view row dynamically */
+    .nav-links.open ~ .nav-auth-social-group,
+    .nav-links.open .nav-auth-social-group {
+        display: flex !important;
+        position: relative;
     }
-}
 
-/* ==========================================================================
-   EDITORIAL VIEW SPLIT PRESENTATION
-   ========================================================================== */
-/*.detail-view-split { 
-    display: flex; 
-    gap: 60px; 
-    align-items: stretch; 
-    margin-bottom: 50px; 
-    background: var(--gallery-color); 
-    padding: 50px; 
-    border-radius: var(--gallery-color); 
-    box-shadow: 0 8px 25px rgba(0,0,0,0.01); 
-    border: 1px solid var(--gallery-color); 
-}
-
-.detail-left-img { 
-    flex: 1; 
-    border-radius: #FFFF
-    ; 
-    overflow: hidden; 
-    border: 1px solid var(--gallery-color);
-    aspect-ratio: 4/3; 
-}
-
-.detail-left-img img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
-    display: block; 
-    transition: var(--transition);
-}
-
-.detail-view-split:hover .detail-left-img img {
-    transform: scale(1.02);
-}
-
-.detail-right-content { 
-    flex: 1.2; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: center; 
-}
-
-.meta-tag { 
-    font-size: 11px; 
-    text-transform: uppercase; 
-    letter-spacing: 3px; 
-    color: var(--accent); /* Maroon subheaders */
-  /*  font-weight: 700; 
-    margin-bottom: 8px; 
-    display: block; 
-}
-
-.detail-right-content h2 { 
-    font-size: 34px; 
-    text-transform: uppercase; 
-    letter-spacing: 1px; 
-    color: var(--primary); 
-    margin-bottom: 20px; 
-}
-
-.detail-right-content p { 
-    color: var(--text-muted); 
-    font-size: 15.5px; 
-    margin-bottom: 25px; 
-    line-height: 1.7; 
-}
-
-.detail-right-content .colored-action-link {
-    display: inline-flex;
-    align-items: center;
-    color: var(--text-main);
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    cursor: pointer;
-    transition: var(--transition);
-    position: relative;
-    padding-bottom: 4px;
-    width: fit-content;
-}
-
-.detail-right-content .colored-action-link::after {
-    content: '';
-    position: absolute;
-    bottom: 0; 
-    left: 0; 
-    width: 30px; 
-    height: 2px;
-    background-color: var(--accent); /* Maroon accent underline */
-  /*  transition: var(--transition);
-}
-
-.detail-right-content .colored-action-link:hover { 
-    color: var(--accent); 
-}
-
-.detail-right-content .colored-action-link:hover::after { 
-    width: 100%; 
-}*/
-
-/* ==========================================================================
-   DYNAMIC CUSTOMER SHOWCASE GALLERY
-   ========================================================================== */
-/*.portfolio-gallery-section {
-    background: var(--bg-card);
-    padding: 40px;
-    border-radius: var(--border-radius);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.01); 
-    border: 1px solid var(--gallery-color);
-    margin-bottom: 60px;
-}
-
-.portfolio-gallery-section h3 {
-    text-transform: uppercase;
-    font-size: 20px;
-    letter-spacing: 2px;
-    margin-bottom: 25px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--gallery-color);
-    color: var(--primary);
-}
-
-.gallery-display-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 25px;
-}
-
-.gallery-card-item {
-    position: relative;
-    background: var(--bg-card);
-    border: 1px solid var(--gallery-color);
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    aspect-ratio: 4 / 3;
-    transition: var(--transition);
-    cursor: pointer;
-}
-
-.gallery-card-item:hover {
-    transform: translateY(-4px);
-    border-color: var(--accent); /* Card changes to maroon border frame on hover */
-  /*  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
-}
-
-.gallery-card-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: var(--transition);
-}
-
-.gallery-card-item:hover img {
-    transform: scale(1.04);
-}
-
-/* --- RUNTIME ERROR SCREENS --- */
-/*.error-screen-box {
-    text-align: center; 
-    padding: 100px 20px; 
-    background: var(--bg-card); 
-    border-radius: var(--border-radius); 
-    border: 1px solid var(--border-color); 
-    color: var(--text-muted);
-}
-
-.error-screen-box h2 {
-    color: var(--primary);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-}
-
-/* ==========================================================================
-   RESPONSIVE MEDIA BREAKPOINTS
-   ========================================================================== */
-/*@media (max-width: 900px) { 
-    body {
-        padding-top: 80px;
+    .nav-auth-social-group .auth-btn {
+        width: calc(100% - 40px);
+        margin: 10px 20px 0 20px;
+        text-align: center;
     }
+
+    .header-socials {
+        width: 100%;
+        justify-content: center;
+        gap: 20px !important;
+        padding-top: 10px;
+    }
+
+    .header-socials .social-icon {
+        font-size: 18px !important;       /* Enhanced target sizes for mobile user fingers */
+        width: 38px !important;
+        height: 38px !important;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 50%;
+    }
+
+    /* Standard content responsiveness corrections */
     .detail-view-split { 
         flex-direction: column !important; 
         padding: 25px; 
         gap: 30px; 
     } 
+
     .gallery-display-grid {
         grid-template-columns: 1fr;
     }
-}*/
+
+    .footer-container {
+        flex-direction: column;
+        gap: 35px;
+        padding: 0 25px;
+    }
+
+    .mobile-menu-toggle {
+        display: block;
+        margin-left: 16px;
+    }
+
+    .footer-bottom-ribbon {
+        margin-top: 40px;
+        padding: 20px 25px;
+    }
+}
