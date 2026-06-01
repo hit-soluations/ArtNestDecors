@@ -14,11 +14,14 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors({
-  origin: [
-    'http://localhost:8080',
-    'https://artnestdecors.onrender.com'
-    
-  ],
+  origin: (origin, callback) => {
+    const allowed = ['http://localhost:8080', 'https://artnestdecors.onrender.com'];
+    if (!origin || allowed.includes(origin)) {
+      return callback(null, true);
+    }
+    // Allow same-origin and custom domains by passing through; adjust if needed.
+    return callback(null, true);
+  },
   credentials: true
 }));
 
@@ -179,6 +182,10 @@ app.get('/welcome', requireAuth, csrfProtection, (req, res) => {
     }
     const token = req.csrfToken();
     const injected = data.replace('</head>', `<script>window.__CSRF_TOKEN = ${JSON.stringify(token)};</script></head>`);
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Vary', 'Cookie');
     res.send(injected);
   });
 });
@@ -194,7 +201,7 @@ app.get('/api/services', requireAuth, (req, res) => {
 });
 
 // API to upload image for a service
-app.post('/api/items/upload', requireAuth, csrfProtection, upload.single('image'), async (req, res) => {
+app.post('/api/items/upload', requireAuth, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No image provided' });
 
   const { service, title } = req.body;

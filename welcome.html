@@ -740,8 +740,7 @@
             { id: 'thematic', name: 'Thematic Event Properties' }
         ];
 
-        let csrfToken = window.__CSRF_TOKEN || null;
-        let uploadReady = false;
+        let uploadReady = true;
 
         function populateServiceOptions(services) {
             const select = document.getElementById('serviceSelect');
@@ -758,37 +757,7 @@
         }
 
 
-        async function fetchCsrfToken() {
-            try {
-                // If token already injected by server, use it
-                if (csrfToken) {
-                    uploadReady = true;
-                    updateUploadButtonState();
-                    return true;
-                }
-
-                const tokenRes = await fetch('/api/csrf-token', { credentials: 'include' });
-                // If the session is missing or expired, redirect to login
-                if (tokenRes.status === 401) {
-                    showAlert('uploadAlert', 'Session expired. Redirecting to login...', 'error');
-                    setTimeout(() => window.location.href = '/login.html', 1200);
-                    return false;
-                }
-                if (!tokenRes.ok) throw new Error('Failed to get CSRF token');
-                const tokenData = await tokenRes.json();
-                csrfToken = tokenData.csrfToken;
-                uploadReady = true;
-                updateUploadButtonState();
-                return true;
-            } catch (err) {
-                uploadReady = false;
-                csrfToken = null;
-                console.error('fetchCsrfToken error:', err);
-                return false;
-            }
-        }
-
-        // Fetch CSRF token and populate services
+        // Fetch services and initialize the upload form
         async function initializePage() {
             try {
                 const servicesRes = await fetch('/api/services', { credentials: 'include' });
@@ -799,11 +768,6 @@
                 populateServiceOptions(FALLBACK_SERVICES);
                 showAlert('uploadAlert', 'Failed to load services from server. Using local fallback list.', 'warning');
                 console.error('initializePage services error:', err);
-            }
-
-            const hasToken = await fetchCsrfToken();
-            if (!hasToken) {
-                showAlert('uploadAlert', 'Unable to initialize secure upload. Please sign in again to enable uploads.', 'error');
             }
         }
 
@@ -876,22 +840,11 @@
                 submitBtn.disabled = false;
                 return;
             }
-            if (!csrfToken) {
-                const tokenReady = await fetchCsrfToken();
-                if (!tokenReady) {
-                    showAlert('uploadAlert', 'Unable to initialize secure upload. Redirecting to login...', 'error');
-                    setTimeout(() => window.location.href = '/login.html', 1200);
-                    submitBtn.disabled = false;
-                    return;
-                }
-            }
-
             const title = document.getElementById('imageTitle').value.trim();
             const formData = new FormData();
             formData.append('image', document.getElementById('imageInput').files[0]);
             formData.append('service', serviceId);
             formData.append('title', title);
-            formData.append('_csrf', csrfToken);
 
             submitBtn.disabled = true;
 
@@ -900,9 +853,6 @@
                 const response = await fetch('/api/items/upload', {
                     method: 'POST',
                     credentials: 'include',
-                    headers: {
-                        'X-CSRF-Token': csrfToken
-                    },
                     body: formData
                 });
 
