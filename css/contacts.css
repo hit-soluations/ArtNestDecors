@@ -1,0 +1,195 @@
+/* ==========================================================================
+   ARTNEST DECORS - CONTACT US PAGE LAYOUT COMPONENT
+   ========================================================================== */
+
+/* --- 1. Pure Luxury Minimalist Hero Banner --- */
+.hero {
+    background-color: #111111;
+    color: #FFFFFF;
+    text-align: center;
+    padding: clamp(60px, 8vw, 100px) 20px;
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: 1px solid #EAE3D2;
+}
+
+.hero h1 {
+    font-size: clamp(32px, 4vw, 54px);
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 15px;
+    margin-top: 0;
+}
+
+.hero p {
+    font-size: clamp(14px, 1.5vw, 18px);
+    color: #EAE3D2;
+    max-width: 600px;
+    margin: 0 auto;
+    font-weight: 300;
+}
+
+/* --- 2. Asymmetric Two-Column Content Runway --- */
+.content {
+    max-width: 1300px;
+    width: 100%;
+    margin: 0 auto;
+    padding: clamp(50px, 6vw, 100px) clamp(20px, 4vw, 60px);
+    box-sizing: border-box;
+    display: grid;
+    /* Grid configuration split: 1.2 column scale on form vs 0.8 column scale on details block */
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: clamp(40px, 6vw, 100px);
+    align-items: start;
+}
+
+/* Content Headings Dynamic Layout */
+.content h2 {
+    grid-column: span 1;
+    font-size: 24px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #111111;
+    margin-bottom: 30px;
+    margin-top: 0;
+    position: relative;
+}
+
+/* Elegant gold accent underline */
+.content h2::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 2px;
+    background-color: #D4AF37;
+    margin-top: 10px;
+}
+
+/* --- 3. High-Fashion Luxury Input Form Block --- */
+#contactForm {
+    background-color: #FFFFFF;
+    border: 1px solid #EAE3D2;
+    padding: clamp(30px, 4vw, 50px);
+    border-radius: 4px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+}
+
+#contactForm label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    color: #111111;
+    margin-bottom: 8px;
+}
+
+#contactForm input[type="text"],
+#contactForm input[type="email"],
+#contactForm textarea {
+    background-color: #FAF8F5;
+    border: 1px solid #EAE3D2;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #111111;
+    font-weight: 300;
+    border-radius: 4px;
+    outline: none;
+    margin-bottom: 25px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#contactForm input:focus,
+#contactForm textarea:focus {
+    border-color: #111111;
+    background-color: #FFFFFF;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+}
+
+#contactForm textarea {
+    resize: vertical;
+}
+
+/* Premium Statement Submit Action Button */
+#contactForm button[type="submit"] {
+    background-color: #111111;
+    color: #FFFFFF;
+    border: 1px solid #111111;
+    padding: 16px 32px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    align-self: flex-start;
+    margin-top: 10px;
+}
+
+#contactForm button[type="submit"]:hover {
+    background-color: transparent;
+    color: #D4AF37;
+    border-color: #D4AF37;
+}
+
+/* --- 4. Editorial Contact Details Column --- */
+.content > h2:nth-of-type(2),
+.content > p {
+    grid-column: 2;
+}
+
+.content > h2:nth-of-type(2) {
+    margin-top: 0;
+}
+
+.content > p {
+    font-size: 15px;
+    color: #222222;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px dashed #EAE3D2;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Metadata Labels generated via CSS pseudo-elements */
+.content > p::before {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    color: #D4AF37;
+    margin-bottom: 4px;
+}
+
+.content > p:nth-of-type(1)::before { content: "Electronic Mail"; }
+.content > p:nth-of-type(2)::before { content: "Direct Line"; }
+.content > p:nth-of-type(3)::before { content: "The Atelier Studio Address"; }
+.content > p:last-of-type { border-bottom: none; }
+
+/* --- 5. Tablet & Mobile Responsive Core Overrides --- */
+@media (max-width: 992px) {
+    .content {
+        grid-template-columns: 1fr;
+        gap: 60px;
+    }
+    
+    .content > h2:nth-of-type(2),
+    .content > p {
+        grid-column: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    #contactForm button[type="submit"] {
+        width: 100%;
+        text-align: center;
+    }
+}

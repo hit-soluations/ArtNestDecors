@@ -313,6 +313,7 @@
             margin: 0 4px;
         }
 
+
         /* Responsive */
         @media (max-width: 480px) {
             .login-container {
@@ -388,6 +389,26 @@
             </div>
         </div>
     </div>
+    <div id="reusable-footer-placeholder"></div>
+    <!-- 2. The high-performance layout injection engine script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Setting path parameters dynamically to fetch from absolute root
+            fetch('/footer.html')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Luxury Footer layout track could not be processed.');
+                    }
+                    return response.text();
+                })
+                .then(htmlMarkup => {
+                    document.getElementById('reusable-footer-placeholder').innerHTML = htmlMarkup;
+                })
+                .catch(err => {
+                    console.error('Core framework execution error:', err);
+                });
+        });
+    </script>
 
     <script src="js/auth.js"></script>
     <script>
