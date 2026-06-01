@@ -105,7 +105,7 @@ const SERVICES = [
   { id: 'signage', name: 'Thermoplastic & Epoxy Signs' },
   { id: 'commercial', name: 'Commercial Sign Boards' },
   { id: 'automation', name: 'Electrical Automation & Wiring' },
-  { id: 'waterfeatures', name: 'Artifacts, Rocks & Waterfalls' },
+  { id: 'waterfeatures', name: 'Artificial Rocks Waterfalls' },
   { id: 'thematic', name: 'Thematic Event Properties' }
 ];
 
