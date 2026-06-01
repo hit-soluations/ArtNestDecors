@@ -23,7 +23,7 @@ app.use(cors({
 }));
 
 // Required when running behind Render/Nginx proxies
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
 
 const PORT = process.env.PORT || 8080;
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -74,6 +74,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: { 
+    path: '/',
     maxAge: 24 * 60 * 60 * 1000,
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -86,6 +87,10 @@ app.use(session({
 
 // CSRF protection
 const csrfProtection = csrf({ cookie: false });
+
+app.get('/welcome.html', (req, res) => {
+  res.redirect('/welcome');
+});
 
 app.use(express.static(path.join(__dirname)));
 
@@ -104,6 +109,9 @@ const SERVICES = [
 // Middleware to check authentication
 const requireAuth = (req, res, next) => {
   if (!req.session.user) {
+    if (req.accepts('html')) {
+      return res.redirect('/login.html');
+    }
     return res.status(401).json({ error: 'Unauthorized. Please login.' });
   }
   next();

@@ -2,7 +2,7 @@
 // ARTNEST DECORS - ADMINISTRATIVE AUTHENTICATION MODULE (auth.js)
 // ==========================================================================
 
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = `${window.location.protocol}//${window.location.host}/api`;
 
 document.addEventListener('DOMContentLoaded', () => {
     syncAdministrativeSessionUI();
