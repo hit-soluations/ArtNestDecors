@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="../css/service-pages.css">
 </head>
 <body style="padding-top: 140px;">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <header>
         <div class="nav-container">
             <a href="index.html" class="logo-wrapper">
@@ -41,16 +41,25 @@
                         </div>
                     </div>
                 </li>
-                <li><a href="../about.html">Contact</a></li>
-                <li><span id="userBadge" class="auth-status-badge">Console: Master Admin</span></li>
-                <li><a id="loginBtn" href="../login.html" class="auth-btn">Sign In</a></li>
-                <li><button id="logoutBtn" class="auth-btn" onclick="logoutSession()" style="display:none;">Sign Out</button></li>
-            </ul>
+
+            <li><a href="../about.html">Contact</a></li>
+            <li><span id="userBadge" class="auth-status-badge">Console: Master Admin</span></li>
+            <li class="nav-auth-social-group">
+                <a id="loginBtn" href="../login.html" class="auth-btn">Sign In</a>
+                <button id="logoutBtn" class="auth-btn" onclick="logoutSession()" style="display:none;">Sign Out</button>
+                
+                <div class="header-socials">
+                    <a href="https://www.instagram.com/artnestdecors" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://www.facebook.com/artnestdecors" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="https://wa.me/+917893039673" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </li>            
+        </ul>
         </div>
     </header>
 
     <main class="container">
-        <a href="../index.html" class="back-btn">&larr; Back to Home</a>
+        
         
         <div id="errorScreen" class="error-screen-box" style="display: none;">
             <h2>Service Profile Not Found</h2>
