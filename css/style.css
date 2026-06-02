@@ -5,7 +5,7 @@
     --primary: #FFFFFF;          /* Crisp high-contrast white for headers inside maroon panels */
     --accent: #d7a456;           /* Soft champagne gold accent */
     --accent-hover: #533d1f;     /* Deeper warm gold hover state */
-    --bg-light: #F4F5F6;         /* Clean, sophisticated gallery slate-white */
+    --bg-light: #ffffff;         /* Clean, sophisticated gallery slate-white */
     --bg-card: #3D1217;          /* Thick luxury maroon strictly to foreground structural panels */
     --text-main: #F5F5F5;        /* Soft ivory for typography inside the maroon panels */
     --text-muted: #C5B2B4;       /* Muted ash-rose descriptions */
@@ -27,7 +27,8 @@ body {
     color: var(--page-dark); 
     line-height: 1.6;
     overflow-x: hidden;
-    padding-top: 100px; 
+    /* Uses fluid calculation for dynamic layout padding shifts */
+    padding-top: clamp(80px, 10vw, 110px); 
 }
 
 /* ==========================================================================
@@ -49,7 +50,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
+    padding: clamp(12px, 2vw, 20px) 20px;
     position: relative;
 }
 
@@ -58,19 +59,20 @@ header {
     display: flex;
     align-items: center;         /* Vertically centers logo and text perfectly */
     flex-direction: row;         /* Forces the logo image to the left, text to the right */
-    gap: 12px;                   /* Gap spacing between logo graphic and text name */
+    gap: clamp(8px, 1.5vw, 12px);                   /* Gap spacing between logo graphic and text name */
     text-decoration: none;
+    flex-shrink: 0;
 }
 
 .header-logo-img {
-    height: 40px;                /* Controls your logo height size */
+    height: clamp(30px, 4vw, 40px);                /* Controls your logo height size smoothly */
     width: auto;
     object-fit: contain;
     display: block;
 }
 
 .logo {
-    font-size: 24px;
+    font-size: clamp(18px, 2.5vw, 24px);
     font-weight: 700;
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -88,7 +90,7 @@ header {
 .nav-links {
     display: flex;
     list-style: none;
-    gap: 30px;
+    gap: clamp(15px, 2.5vw, 30px);
     align-items: center;
 }
 
@@ -97,7 +99,7 @@ header {
     color: var(--text-main);
     font-weight: 500;
     text-transform: uppercase;
-    font-size: 13px;
+    font-size: clamp(11px, 1.2vw, 13px);
     letter-spacing: 1px;
     cursor: pointer;
     transition: var(--transition);
@@ -130,33 +132,46 @@ header {
 .nav-auth-social-group {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: clamp(15px, 2vw, 20px);
 }
 
 .header-socials {
     display: flex;
     align-items: center;
     gap: 14px;
+    flex-shrink: 0;
 }
 
 .header-socials .social-icon {
-    color: var(--text-main);
+    color: var(--text-main) !important;
     font-size: 15px;
-    text-decoration: none;
+    text-decoration: none !important;
     transition: var(--transition);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 28px;
+    height: 28px;
+    line-height: 1 !important;
 }
 
-/* Prevents bottom hover lines from rendering underneath font-awesome symbols */
+/* Strips any inherited active accent borders underneath font-awesome and SVG metrics */
 .header-socials .social-icon::after {
     display: none !important;
+    content: none !important;
+}
+
+.header-socials .social-icon svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    fill: currentColor;
 }
 
 .header-socials .social-icon:hover {
     color: var(--accent) !important;
     transform: translateY(-2px);
+    background: transparent !important;
 }
 
 /* --- MOBILE TOGGLE ELEMENT --- */
@@ -168,6 +183,7 @@ header {
     width: 40px;
     height: 40px;
     position: relative;
+    flex-shrink: 0;
 }
 
 .mobile-menu-toggle span,
@@ -205,7 +221,7 @@ header {
     background-color: rgba(61, 18, 23, 0.95); 
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     border-radius: var(--border-radius); 
-    width: 560px; 
+    width: min(560px, 90vw); 
     padding: 25px;
     grid-template-columns: 1fr 1fr; 
     gap: 25px; 
@@ -270,12 +286,14 @@ header {
 .auth-btn { 
     background-color: rgba(255, 255, 255, 0.1); 
     color: var(--primary) !important; 
-    padding: 10px 20px !important; 
+    padding: 10px clamp(12px, 1.5vw, 20px) !important; 
     border-radius: var(--border-radius); 
-    font-size: 12px !important; 
+    font-size: clamp(11px, 1.2vw, 12px) !important; 
     border: 1px solid var(--border-color); 
     outline: none; 
     cursor: pointer; 
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .auth-btn:hover { 
@@ -288,22 +306,23 @@ header {
    ========================================================================== */
 .hero-banner { 
     text-align: center; 
-    padding: 40px 20px 10px 20px; 
+    padding: clamp(20px, 5vw, 40px) 20px 10px 20px; 
     max-width: 1200px;
     margin: 20px auto 0 auto;
 }
 
 .hero-banner h1 { 
-    font-size: 44px; 
+    font-size: clamp(26px, 5vw, 44px); 
     text-transform: uppercase; 
     letter-spacing: 3px; 
     margin-bottom: 15px; 
     color: var(--page-dark); 
+    line-height: 1.2;
 }
 
 .hero-banner p { 
     color: #304c69; 
-    font-size: 18px; 
+    font-size: clamp(14px, 2vw, 18px); 
     max-width: 700px; 
     margin: 0 auto; 
 }
@@ -315,11 +334,12 @@ header {
     position: relative;
     max-width: 1200px;
     margin: 40px auto 60px auto;
-    height: 480px;
+    height: clamp(300px, 45vw, 480px);
     overflow: hidden;
     border-radius: var(--border-radius);
     box-shadow: 0 15px 35px rgba(61, 18, 23, 0.1);
     border: 1px solid #E2E8F0;
+    width: calc(100% - 40px);
 }
 
 .carousel-track-wrapper {
@@ -352,13 +372,14 @@ header {
 
 .carousel-slide-caption {
     position: absolute;
-    bottom: 40px;
-    left: 40px;
+    bottom: clamp(20px, 4vw, 40px);
+    left: clamp(20px, 4vw, 40px);
+    right: clamp(20px, 4vw, 40px);
     background: rgba(61, 18, 23, 0.92); 
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     color: #FFFFFF;
-    padding: 25px 30px;
+    padding: clamp(15px, 2.5vw, 25px) clamp(20px, 3vw, 30px);
     border-left: 3px solid var(--accent);
     max-width: 450px;
     transform: translateY(20px);
@@ -376,7 +397,7 @@ header {
 }
 
 .carousel-slide-caption h3 {
-    font-size: 20px;
+    font-size: clamp(16px, 2vw, 20px);
     text-transform: uppercase;
     letter-spacing: 2px;
     margin-bottom: 8px;
@@ -384,7 +405,7 @@ header {
 }
 
 .carousel-slide-caption p {
-    font-size: 13.5px;
+    font-size: clamp(12px, 1.5vw, 13.5px);
     color: var(--text-main);
     line-height: 1.5;
 }
@@ -395,10 +416,10 @@ header {
     transform: translateY(-50%);
     background: rgba(61, 18, 23, 0.95);
     border: 1px solid var(--border-color);
-    width: 45px;
-    height: 45px;
+    width: clamp(36px, 4.5vw, 45px);
+    height: clamp(36px, 4.5vw, 45px);
     border-radius: 50%;
-    font-size: 18px;
+    font-size: clamp(14px, 1.8vw, 18px);
     color: var(--primary);
     cursor: pointer;
     z-index: 10;
@@ -415,12 +436,12 @@ header {
     border-color: var(--accent);
 }
 
-.carousel-control-arrow.prev-trigger { left: 20px; }
-.carousel-control-arrow.next-trigger { right: 20px; }
+.carousel-control-arrow.prev-trigger { left: clamp(10px, 2vw, 20px); }
+.carousel-control-arrow.next-trigger { right: clamp(10px, 2vw, 20px); }
 
 .carousel-indicator-dots-row {
     position: absolute;
-    bottom: 20px;
+    bottom: clamp(10px, 2vw, 20px);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -429,8 +450,8 @@ header {
 }
 
 .indicator-dot {
-    width: 10px;
-    height: 10px;
+    width: clamp(8px, 1.5vw, 10px);
+    height: clamp(8px, 1.5vw, 10px);
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.4);
     border: none;
@@ -440,7 +461,7 @@ header {
 
 .indicator-dot.is-selected {
     background: var(--accent);
-    width: 24px;
+    width: clamp(18px, 3vw, 24px);
     border-radius: 10px;
 }
 
@@ -450,7 +471,7 @@ header {
 .services-alternating-container { 
     display: flex; 
     flex-direction: column; 
-    gap: 80px; 
+    gap: clamp(40px, 6vw, 80px); 
     max-width: 1200px;
     margin: 40px auto;
     padding: 0 20px;
@@ -459,9 +480,9 @@ header {
 .service-row { 
     display: flex; 
     align-items: center; 
-    gap: 60px; 
+    gap: clamp(30px, 5vw, 60px); 
     background: rgba(255, 255, 255, 0.85); 
-    padding: 40px; 
+    padding: clamp(20px, 4vw, 40px); 
     border-radius: var(--border-radius); 
     box-shadow: 0 10px 30px rgba(180, 107, 115, 0.12); 
     border: 1px solid var(--border-color);
@@ -477,6 +498,7 @@ header {
     border-radius: var(--border-radius); 
     aspect-ratio: 16/10; 
     box-shadow: 0 10px 25px rgba(216, 208, 208, 0.3); 
+    width: 100%;
 }
 
 .service-row-img img { 
@@ -495,17 +517,18 @@ header {
 }
 
 .service-row-info h2 { 
-    font-size: 28px; 
+    font-size: clamp(20px, 2.5vw, 28px); 
     text-transform: uppercase; 
     letter-spacing: 1px; 
     margin-bottom: 15px; 
     color: var(--border-color); 
+    line-height: 1.3;
 }
 
 .service-row-info p { 
     color: var(--border-color); 
     margin-bottom: 25px; 
-    font-size: 16px; 
+    font-size: clamp(14px, 1.6vw, 16px); 
 }
 
 .colored-action-link {
@@ -548,19 +571,20 @@ header {
    ========================================================================== */
 .contact-layout { 
     display: flex; 
-    gap: 50px; 
+    gap: clamp(30px, 4vw, 50px); 
     background: var(--bg-card); 
-    padding: 50px; 
+    padding: clamp(25px, 4vw, 50px); 
     border-radius: var(--border-radius); 
     max-width: 1200px;
     margin: 0 auto;
     border: 1px solid var(--border-color);
     box-shadow: 0 10px 30px rgba(61, 1, 8, 0.85); 
+    width: calc(100% - 40px);
 }
 
 .contact-info {  flex: 1; }
-.contact-info h4 { text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; color: var(--accent); }
-.contact-info p { color: #4a0716; margin-bottom: 20px; }
+.contact-info h4 { text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; color: var(--accent); font-size: clamp(18px, 2vw, 22px); }
+.contact-info p { color: #4a0716; margin-bottom: 20px; font-size: clamp(14px, 1.6vw, 16px); }
 .contact-form { flex: 1.5; display: flex; flex-direction: column; gap: 20px; }
 
 .contact-form input, .contact-form textarea { 
@@ -571,6 +595,7 @@ header {
     color: var(--text-main);
     border-radius: var(--border-radius); 
     outline: none; 
+    font-size: 14px;
 }
 
 .contact-form input:focus, .contact-form textarea:focus { 
@@ -600,7 +625,7 @@ header {
 .main-footer {
     background-color: #FFFFFF !important; 
     color: #1A1A1A !important;
-    padding: clamp(60px, 8vw, 140px) clamp(20px, 4vw, 60px) 0 clamp(20px, 4vw, 60px);
+    padding: clamp(50px, 7vw, 140px) clamp(20px, 4vw, 60px) 0 clamp(20px, 4vw, 60px);
     margin-top: auto; 
     border-top: 1px solid #EAE3D2; 
     width: 100%;
@@ -613,8 +638,8 @@ header {
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1.1fr 0.9fr;
-    gap: clamp(40px, 6vw, 100px);
-    padding-bottom: clamp(40px, 6vw, 80px);
+    gap: clamp(40px, 5vw, 100px);
+    padding-bottom: clamp(40px, 5vw, 80px);
 }
 
 .footer-brand-column {
@@ -625,7 +650,7 @@ header {
 }
 
 .footer-editorial-statement {
-    font-size: clamp(24px, 2.5vw, 38px);
+    font-size: clamp(22px, 2.5vw, 38px);
     line-height: 1.3;
     font-weight: 300;
     letter-spacing: -0.5px;
@@ -664,7 +689,7 @@ header {
 }
 
 .gate-submit-btn:hover { color: #D4AF37; transform: translateX(4px); }
-.footer-directory-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 30px; }
+.footer-directory-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 30px; }
 .directory-group h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #1A1A1A; font-weight: 600; margin-bottom: 20px; }
 .directory-group ul { list-style: none; display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; }
 .directory-group ul li a { text-decoration: none; font-size: 13px; color: #777777; font-weight: 400; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: inline-block; }
@@ -686,6 +711,7 @@ header {
 .social-curation-link:hover { color: #D4AF37; border-color: #EAE3D2; background-color: #FAF8F5; }
 .social-curation-link:hover .social-icon-svg { transform: scale(1.1); }
 
+/* Desktop & Mid-tier Monitors Adjustments */
 @media (max-width: 1024px) {
     .footer-top-editorial { grid-template-columns: 1fr; gap: 50px; }
 }
@@ -695,13 +721,7 @@ header {
     .socials-block { order: 1; }
     .studio-info-block { order: 2; }
     .copyright-block { order: 3; }
-}
-
-@media (max-width: 480px) {
-    .footer-directory-matrix { grid-template-columns: 1fr; gap: 35px; }
-    .social-curation-link { width: 40px; height: 40px; }
-    .social-icon-svg { width: 18px; height: 18px; }
-    .ribbon-block p { font-size: 10px; line-height: 1.6; }
+    .contact-layout { flex-direction: column; gap: 40px; }
 }
 
 /* ==========================================================================
@@ -709,7 +729,7 @@ header {
    ========================================================================== */
 @media (max-width: 768px) {
     body {
-        padding-top: 80px;
+        padding-top: 75px;
     }
     .nav-container {
         padding: 16px 20px;
@@ -735,7 +755,7 @@ header {
     
     /* Dynamic expansion to handle nested dropdown configurations safely */
     .nav-links.open {
-        max-height: 800px; 
+        max-height: 85vh; 
         overflow-y: auto;
     }
     
@@ -751,6 +771,11 @@ header {
         text-align: left;
         border-top: 1px solid rgba(255,255,255,0.08);
         margin: 0;
+        font-size: 14px !important;
+    }
+
+    .nav-links li a::after, .dropdown-trigger::after {
+        display: none !important; /* Removes absolute layout lines on touch screens */
     }
     
     /* Nested Services Interaction */
@@ -795,63 +820,50 @@ header {
         width: calc(100% - 40px);
         margin: 16px 20px 8px 20px;
         text-align: center;
+        padding: 12px !important;
     }
 
-    /* Fixed mobile social tray layout */
+    /* Fixed mobile social tray layout inside hidden sidebar */
     .header-socials {
-        display: flex !important; /* Overrides previous display: none rule safely */
+        display: flex !important; 
         justify-content: flex-start;
         width: 100%;
-        padding: 16px 20px 20px 20px;
-        gap: 25px;
+        padding: 12px 20px 20px 20px;
+        gap: 20px;
         border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .header-socials .social-icon {
-        font-size: 20px; /* Larger target scale sizing for touchscreen safety */
+        font-size: 18px !important; /* Larger hit target matrix scaling for touchscreen safety */
         padding: 6px 0 !important;
+        width: 32px;
+        height: 32px;
     }
 
     /* Standard Core Components Corrections */
     .carousel-viewport-container {
-        height: 320px;
+        height: 280px;
         margin-top: 20px;
         margin-bottom: 40px;
     }
-    .hero-banner h1 {
-        font-size: 32px;
-    }
     .service-row, .service-row:nth-child(even) { 
         flex-direction: column !important; 
-        gap: 30px; 
+        gap: 25px; 
         padding: 20px; 
     }
-    .hero-banner p {
-        font-size: 15px;
-        max-width: 100%;
-    }
     .carousel-slide-caption { 
-        bottom: 20px; 
-        left: 20px; 
-        right: 20px; 
+        bottom: 15px; 
+        left: 15px; 
+        right: 15px; 
         max-width: none; 
         padding: 15px; 
     }
-    .carousel-slide-caption h3 { 
-        font-size: 16px; 
-    }
-    .carousel-control-arrow { 
-        width: 36px; 
-        height: 36px; 
-        font-size: 14px; 
-    }
-    .footer-container {
-        flex-direction: column;
-        gap: 35px;
-        padding: 0 25px;
-    }
-    .footer-bottom-ribbon {
-        margin-top: 40px;
-        padding: 20px 25px;
-    }
+}
+
+/* Micro Device Layer Optimization */
+@media (max-width: 480px) {
+    .footer-directory-matrix { grid-template-columns: 1fr; gap: 35px; }
+    .social-curation-link { width: 40px; height: 40px; }
+    .social-icon-svg { width: 18px; height: 18px; }
+    .ribbon-block p { font-size: 10px; line-height: 1.6; }
 }
