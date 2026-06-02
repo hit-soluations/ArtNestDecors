@@ -11,7 +11,10 @@
 
     <header>
         <div class="nav-container">
-            <a href="../index.html" class="logo">ArtNest<span>Decors</span></a>
+            <a href="index.html" class="logo-wrapper">
+            <img src="images/logo.png"  class="header-logo-img">
+            <span class="logo">ArtNest<span>Decors</span></span>
+           </a>
             <button class="mobile-menu-toggle" aria-label="Toggle navigation menu"><span></span></button>
             <ul class="nav-links">
                 <li><a href="../index.html">Home</a></li>
@@ -32,7 +35,7 @@
                             <ul>
                                 <li><a href="../services/service-template.html?id=commercial">Commercial Sign Boards</a></li>
                                 <li><a href="../services/service-template.html?id=automation">Electrical Automation & Wiring</a></li>
-                                <li><a href="../services/service-template.html?id=waterfeatures">Artifacts, Rocks & Waterfalls</a></li>
+                                <li><a href="../services/service-template.html?id=waterfeatures">Artificial Rocks Waterfalls</a></li>
                                 <li><a href="../services/service-template.html?id=thematic">Thematic Event Properties</a></li>
                             </ul>
                         </div>
@@ -79,8 +82,8 @@
             <div class="portfolio-gallery-section">
                 <h3 id="gallerySectionHeading">Division Portfolio Showcase</h3>
                 
-                <div id="premiumVaultLockMessage" style="display:none; background:#FFF5E6; padding:15px; color:#C5A880; font-weight:600; font-size:13px; border-radius:4px; text-align:center; margin-bottom:20px;">
-                    🔒 Premium Design Assets Vault is locked. Sign in to review unreleased blueprints.
+                <div id="premiumVaultLockMessage" style="display:none; background:#FFF5E6; padding:15px; color:#694a1e; font-weight:600; font-size:13px; border-radius:4px; text-align:center; margin-bottom:20px;">
+                    Interested in exploring this layout further? Contact our lead designer below to get complete details regarding this project's specifications.
                 </div>
 
                 <div id="runtimeActiveGalleryGrid" class="gallery-display-grid">
@@ -89,9 +92,29 @@
         </div>
     </main>
 
-    <div class="footer-bottom-ribbon">
-        <p>&copy; 2026 ArtNest Decors. All Rights Reserved. Crafted with Precision.</p>
-    </div>
+   <!-- 1. The structural layout anchor placeholder -->
+    <div id="reusable-footer-placeholder"></div>
+
+    <!-- 2. The high-performance layout injection engine script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Setting path parameters dynamically to fetch from absolute root
+            fetch('/footer.html')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Luxury Footer layout track could not be processed.');
+                    }
+                    return response.text();
+                })
+                .then(htmlMarkup => {
+                    document.getElementById('reusable-footer-placeholder').innerHTML = htmlMarkup;
+                })
+                .catch(err => {
+                    console.error('Core framework execution error:', err);
+                });
+        });
+    </script>
+
 
     <script src="../js/auth.js"></script>
     <script src="../js/main.js"></script>
