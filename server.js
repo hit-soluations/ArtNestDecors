@@ -70,11 +70,32 @@ if (process.env.CLOUDINARY_URL) {
 
 function uploadToCloudinary(buffer, filename, mimetype) {
   return new Promise((resolve, reject) => {
+    console.log(`[UPLOAD_STREAM] Starting stream for ${filename} (${buffer.length} bytes, ${mimetype})`);
+
     const uploadStream = cloudinary.uploader.upload_stream({ folder: 'artnest' }, (error, result) => {
-      if (error) return reject(error);
+      if (error) {
+        console.error(`[UPLOAD_STREAM] Cloudinary callback error:`, error);
+        return reject(error);
+      }
+      console.log(`[UPLOAD_STREAM] Cloudinary callback success - public_id=${result.public_id}`);
       resolve({ id: result.public_id, url: result.secure_url, raw: result });
     });
-    streamifier.createReadStream(buffer).pipe(uploadStream);
+
+    const readStream = streamifier.createReadStream(buffer);
+
+    readStream.on('error', (err) => {
+      console.error(`[UPLOAD_STREAM] ReadStream error:`, err.message);
+      uploadStream.destroy();
+      reject(new Error('Failed to read buffer: ' + err.message));
+    });
+
+    uploadStream.on('error', (err) => {
+      console.error(`[UPLOAD_STREAM] UploadStream error:`, err.message);
+      reject(err);
+    });
+
+    console.log(`[UPLOAD_STREAM] Beginning pipe from readStream to uploadStream`);
+    readStream.pipe(uploadStream);
   });
 }
 
@@ -214,7 +235,7 @@ app.get('/api/services', requireAuth, (req, res) => {
   res.json(SERVICES);
 });
 
-// API to upload image for a service (uploads to Cloudflare Images)
+// API to upload image for a service (uploads to Cloudinary)
 app.post('/api/items/upload', requireAuth, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No image provided' });
 
@@ -228,6 +249,8 @@ app.post('/api/items/upload', requireAuth, upload.single('image'), async (req, r
   }
 
   try {
+    console.log(`[UPLOAD] Starting upload for service=${service}, title=${trimmedTitle}, fileSize=${req.file.size}, bufferLength=${req.file.buffer.length}`);
+
     // Check if service already has 10 items
     const countResult = await pool.query('SELECT COUNT(*) as count FROM items WHERE service_id = $1', [service]);
     if (parseInt(countResult.rows[0].count) >= 10) {
@@ -236,10 +259,14 @@ app.post('/api/items/upload', requireAuth, upload.single('image'), async (req, r
 
     // Upload to Cloudinary using IMG_* env vars mapped above
     if (!cloudinary.config().cloud_name) {
+      console.error('[UPLOAD] Cloudinary not configured - cloud_name missing');
       return res.status(500).json({ error: 'Cloudinary not configured on server' });
     }
 
+    console.log(`[UPLOAD] Uploading to Cloudinary with cloud_name=${cloudinary.config().cloud_name}`);
     const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname || `upload-${Date.now()}.jpg`, req.file.mimetype || 'application/octet-stream');
+    console.log(`[UPLOAD] Cloudinary upload successful - publicId=${uploadResult.id}, url=${uploadResult.url}`);
+
     const publicId = uploadResult.id || null;
     const imageUrl = uploadResult.url || '';
 
@@ -249,10 +276,12 @@ app.post('/api/items/upload', requireAuth, upload.single('image'), async (req, r
       [service, trimmedTitle, imageUrl, publicId, req.session.user.username]
     );
 
+    console.log(`[UPLOAD] Database insert successful - publicId=${publicId}`);
     res.json({ success: true, message: 'Image uploaded successfully', imagePath: imageUrl });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to upload image' });
+    console.error('[UPLOAD] Error during upload:', err.message || err);
+    console.error('[UPLOAD] Full error:', err);
+    res.status(500).json({ error: 'Failed to upload image: ' + (err.message || 'Unknown error') });
   }
 });
 
@@ -347,4 +376,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Server error' });
 });
 
-app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server listening on http://localhost:${PORT}`);
+  if (cloudinary.config().cloud_name) {
+    console.log(`✅ Cloudinary configured with cloud_name: ${cloudinary.config().cloud_name}`);
+  } else {
+    console.warn(`⚠️  Cloudinary not properly configured - uploads will fail`);
+  }
+});

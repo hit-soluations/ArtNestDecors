@@ -1,8 +1,7 @@
 #!/usr/bin/env node
+
 const fs = require('fs');
 const path = require('path');
-const cloudinary = require('cloudinary').v2;
-const streamifier = require('streamifier');
 
 // Ensure a local .env exists in repo root. If missing, try to copy .env.example
 console.log(__dirname);
@@ -24,8 +23,8 @@ if (!fs.existsSync(envPath)) {
 const { initSchema } = require('../src/schema');
 const { seedUsers } = require('../src/seeder');
 const { pool, IMG_CLDNAME, IMG_APIKEY, IMG_APISRT } = require('../src/db');
-
-
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
 
 if (process.env.CLOUDINARY_URL) {
   cloudinary.config({ secure: true });
@@ -94,7 +93,18 @@ async function migrateUploadsToCloudflare() {
             if (error) return reject(error);
             resolve(result);
           });
-          streamifier.createReadStream(buffer).pipe(uploadStream);
+
+          const readStream = streamifier.createReadStream(buffer);
+          readStream.on('error', (err) => {
+            uploadStream.destroy();
+            reject(new Error('Failed to read buffer: ' + err.message));
+          });
+
+          uploadStream.on('error', (err) => {
+            reject(err);
+          });
+
+          readStream.pipe(uploadStream);
         });
         const imageId = uploadResult.public_id || uploadResult.id || null;
         // Prefer common secure/url fields (Cloudinary/Cloudflare). If missing, try to construct a reasonable URL

@@ -4,7 +4,10 @@
   "description": "Node.js + PostgreSQL backend for ArtNestDecors",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "setup-db": "node Installer/scripts/setup-db.js",
+    "init-db": "node Installer/scripts/setup-db.js",
+    "seed-users": "node Installer/scripts/setup-db.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
