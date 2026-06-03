@@ -949,9 +949,16 @@
                         </div>
                     `;
                 } else {
-                    container.innerHTML = items.map(item => `
+                    container.innerHTML = items.map(item => {
+                        // Prefer Cloudflare image delivery URL if image_id exists
+                        let src = item.image_path;
+                        if (item.image_id && window.__CF_ACCOUNT_ID) {
+                            // Cloudflare Images delivery URL pattern: https://imagedelivery.net/<account-id>/<image-id>/public
+                            src = `https://imagedelivery.net/${window.__CF_ACCOUNT_ID}/${item.image_id}/public`;
+                        }
+                        return `
                         <div class="item-card">
-                            <img src="${item.image_path}" alt="${item.title || 'Uploaded image'}" class="item-image">
+                            <img src="${src}" alt="${(item.title || 'Uploaded image')}" class="item-image">
                             <div class="item-title">${item.title ? item.title : 'Untitled'}</div>
                             <div class="item-actions">
                                 <button type="button" class="delete-btn" onclick="deleteItem(${item.id})">
@@ -959,7 +966,7 @@
                                 </button>
                             </div>
                         </div>
-                    `).join('');
+                    `}).join('');
                 }
                 document.getElementById('imagesAlert').innerHTML = '';
             } catch (err) {
