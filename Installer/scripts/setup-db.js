@@ -23,9 +23,7 @@ if (!fs.existsSync(envPath)) {
 const { initSchema } = require('../src/schema');
 const { seedUsers } = require('../src/seeder');
 const { pool, IMG_CLDNAME, IMG_APIKEY, IMG_APISRT } = require('../src/db');
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
+
 
 async function run() {
   try {
