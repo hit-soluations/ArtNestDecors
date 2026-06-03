@@ -377,10 +377,30 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
+  console.log(`\n${'='.repeat(60)}`);
   console.log(`Server listening on http://localhost:${PORT}`);
-  if (cloudinary.config().cloud_name) {
-    console.log(`✅ Cloudinary configured with cloud_name: ${cloudinary.config().cloud_name}`);
+  console.log(`${'='.repeat(60)}`);
+
+  // Production diagnostic info
+  console.log(`\n📋 CONFIGURATION STATUS:`);
+  console.log(`  NODE_ENV: ${process.env.NODE_ENV || 'not set (defaults to development)'}`);
+  console.log(`  DATABASE_URL: ${process.env.DATABASE_URL ? '✅ Set' : '❌ NOT SET'}`);
+  console.log(`  SESSION_SECRET: ${process.env.SESSION_SECRET ? '✅ Set' : '❌ Using default'}`);
+
+  // Cloudinary configuration check
+  console.log(`\n☁️  CLOUDINARY STATUS:`);
+  const cloudinaryConfig = cloudinary.config();
+  if (cloudinaryConfig.cloud_name) {
+    console.log(`  ✅ Cloud Name: ${cloudinaryConfig.cloud_name}`);
+    console.log(`  ✅ API Key: ${cloudinaryConfig.api_key ? 'Set' : 'NOT SET'}`);
+    console.log(`  ✅ API Secret: ${cloudinaryConfig.api_secret ? 'Set' : 'NOT SET'}`);
   } else {
-    console.warn(`⚠️  Cloudinary not properly configured - uploads will fail`);
+    console.error(`  ❌ Cloudinary NOT configured`);
+    console.error(`     Check environment variables:`);
+    console.error(`     - CLOUDINARY_URL or`);
+    console.error(`     - IMG_CLDNAME, IMG_APIKEY, IMG_APISRT`);
+    console.warn(`     ⚠️  Image uploads will FAIL without Cloudinary config`);
   }
+
+  console.log(`${'='.repeat(60)}\n`);
 });

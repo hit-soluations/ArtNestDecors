@@ -23,6 +23,7 @@ if (!fs.existsSync(envPath)) {
 const { initSchema } = require('../src/schema');
 const { seedUsers } = require('../src/seeder');
 const { pool, IMG_CLDNAME, IMG_APIKEY, IMG_APISRT } = require('../src/db');
+
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
 
@@ -36,6 +37,31 @@ if (process.env.CLOUDINARY_URL) {
 
 async function run() {
   try {
+    // Show configuration status
+    console.log('\n' + '='.repeat(60));
+    console.log('DATABASE SETUP - CONFIGURATION STATUS');
+    console.log('='.repeat(60));
+    console.log('\n📋 ENVIRONMENT:');
+    console.log(`  NODE_ENV: ${process.env.NODE_ENV || 'not set'}`);
+    console.log(`  DATABASE_URL: ${process.env.DATABASE_URL ? '✅ Set' : '❌ NOT SET (required)'}`);
+
+    console.log('\n☁️  CLOUDINARY:');
+    if (IMG_CLDNAME && IMG_APIKEY && IMG_APISRT) {
+      console.log(`  ✅ Cloud Name: ${IMG_CLDNAME}`);
+      console.log(`  ✅ API Key: Set`);
+      console.log(`  ✅ API Secret: Set`);
+    } else {
+      console.warn(`  ❌ Cloudinary NOT configured`);
+      if (!IMG_CLDNAME) console.warn(`     Missing: IMG_CLDNAME`);
+      if (!IMG_APIKEY) console.warn(`     Missing: IMG_APIKEY`);
+      if (!IMG_APISRT) console.warn(`     Missing: IMG_APISRT`);
+    }
+
+    console.log('\n📝 MIGRATION FLAGS:');
+    console.log(`  MIGRATE_UPLOADS: ${process.env.MIGRATE_UPLOADS || 'not set'}`);
+    console.log(`  MIGRATE_CF: ${process.env.MIGRATE_CF || 'not set'}`);
+    console.log('='.repeat(60) + '\n');
+
     console.log('Initializing database schema...');
     await initSchema();
     console.log('Seeding initial users...');
