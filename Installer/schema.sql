@@ -15,7 +15,9 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users (username);
 CREATE TABLE IF NOT EXISTS items (
   id SERIAL PRIMARY KEY,
   service_id TEXT NOT NULL,
+	title TEXT,
   image_path TEXT NOT NULL,
+  image_id TEXT,
   uploaded_by TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_uploaded_by FOREIGN KEY (uploaded_by) REFERENCES users(username) ON DELETE CASCADE

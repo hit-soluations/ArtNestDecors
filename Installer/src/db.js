@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const { DATABASE_URL } = require('./config');
+const { DATABASE_URL, IMG_CLDNAME, IMG_APIKEY, IMG_APISRT } = require('./config');
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
@@ -7,5 +7,8 @@ const pool = new Pool({
 });
 
 module.exports = {
-  pool
+  pool,
+  IMG_CLDNAME,
+  IMG_APIKEY,
+  IMG_APISRT
 };
