@@ -11,6 +11,8 @@ const multer = require('multer');
 const csrf = require('csurf');
 const cors = require('cors');
 const https = require('https');
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
 
 const app = express();
 
@@ -53,57 +55,26 @@ const upload = multer({
   }
 });
 
-// Cloudflare Images configuration - expects the following env vars to be set:
-// IMG_CLDNAME (Cloudflare account id), IMG_APIKEY (API token)
-const CF_ACCOUNT_ID = process.env.IMG_CLDNAME;
-const CF_API_TOKEN = process.env.IMG_APIKEY;
-if (!CF_ACCOUNT_ID || !CF_API_TOKEN) {
-  console.error('Error: IMG_CLDNAME and IMG_APIKEY environment variables are required for Cloudflare Images uploads.');
-  // Do not exit here to allow other non-upload functionality, but uploads will fail if not set.
+// Cloudinary configuration using the original IMG_* env var names so existing deploys don't need to change env
+const IMG_CLDNAME = process.env.IMG_CLDNAME; // will be used as Cloudinary cloud_name
+const IMG_APIKEY = process.env.IMG_APIKEY; // will be used as Cloudinary api_key
+const IMG_APISRT = process.env.IMG_APISRT; // will be used as Cloudinary api_secret
+
+if (process.env.CLOUDINARY_URL) {
+  cloudinary.config({ secure: true });
+} else if (IMG_CLDNAME && IMG_APIKEY && IMG_APISRT) {
+  cloudinary.config({ cloud_name: IMG_CLDNAME, api_key: IMG_APIKEY, api_secret: IMG_APISRT, secure: true });
+} else {
+  console.error('Warning: Cloudinary credentials (IMG_CLDNAME, IMG_APIKEY, IMG_APISRT) are not all set. Uploads will fail.');
 }
 
-// Helper to upload a Buffer to Cloudflare Images
-async function uploadToCloudflare(buffer, filename, mimetype) {
+function uploadToCloudinary(buffer, filename, mimetype) {
   return new Promise((resolve, reject) => {
-    const boundary = '--------------------------' + Date.now().toString(16);
-    const crlf = '\r\n';
-    const partHeaders = `--${boundary}${crlf}Content-Disposition: form-data; name="file"; filename="${filename}"${crlf}Content-Type: ${mimetype}${crlf}${crlf}`;
-    const end = `${crlf}--${boundary}--${crlf}`;
-    const body = Buffer.concat([Buffer.from(partHeaders, 'utf8'), buffer, Buffer.from(end, 'utf8')]);
-
-    const options = {
-      hostname: 'api.cloudflare.com',
-      path: `/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1`,
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${CF_API_TOKEN}`,
-        'Content-Type': `multipart/form-data; boundary=${boundary}`,
-        'Content-Length': body.length
-      }
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => data += chunk);
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed && parsed.success && parsed.result) {
-            const id = parsed.result.id;
-            const url = (parsed.result.variants && parsed.result.variants[0]) || parsed.result.uploadURL || null;
-            resolve({ id, url, raw: parsed });
-          } else {
-            reject(new Error('Cloudflare upload failed: ' + data));
-          }
-        } catch (e) {
-          reject(e);
-        }
-      });
+    const uploadStream = cloudinary.uploader.upload_stream({ folder: 'artnest' }, (error, result) => {
+      if (error) return reject(error);
+      resolve({ id: result.public_id, url: result.secure_url, raw: result });
     });
-
-    req.on('error', (err) => reject(err));
-    req.write(body);
-    req.end();
+    streamifier.createReadStream(buffer).pipe(uploadStream);
   });
 }
 
@@ -224,7 +195,7 @@ app.get('/welcome', requireAuth, csrfProtection, (req, res) => {
       return res.status(500).send('Server error');
     }
     const token = req.csrfToken();
-    const injected = data.replace('</head>', `<script>window.__CSRF_TOKEN = ${JSON.stringify(token)}; window.__CF_ACCOUNT_ID = ${JSON.stringify(CF_ACCOUNT_ID || null)};</script></head>`);
+    const injected = data.replace('</head>', `<script>window.__CSRF_TOKEN = ${JSON.stringify(token)}; window.__IMG_CLDNAME = ${JSON.stringify(IMG_CLDNAME || null)};</script></head>`);
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
@@ -263,19 +234,19 @@ app.post('/api/items/upload', requireAuth, upload.single('image'), async (req, r
       return res.status(400).json({ error: 'Maximum 10 items allowed per service' });
     }
 
-    // Upload to Cloudflare Images
-    if (!CF_ACCOUNT_ID || !CF_API_TOKEN) {
-      return res.status(500).json({ error: 'Cloudflare Images not configured on server' });
+    // Upload to Cloudinary using IMG_* env vars mapped above
+    if (!cloudinary.config().cloud_name) {
+      return res.status(500).json({ error: 'Cloudinary not configured on server' });
     }
 
-    const uploadResult = await uploadToCloudflare(req.file.buffer, req.file.originalname || `upload-${Date.now()}.jpg`, req.file.mimetype || 'application/octet-stream');
+    const uploadResult = await uploadToCloudinary(req.file.buffer, req.file.originalname || `upload-${Date.now()}.jpg`, req.file.mimetype || 'application/octet-stream');
+    const publicId = uploadResult.id || null;
     const imageUrl = uploadResult.url || '';
-    const imageId = uploadResult.id || null;
 
-    // Insert into database
+    // Insert into database (image_path stores URL, image_id stores public_id)
     await pool.query(
       'INSERT INTO items (service_id, title, image_path, image_id, uploaded_by) VALUES ($1, $2, $3, $4, $5)',
-      [service, trimmedTitle, imageUrl, imageId, req.session.user.username]
+      [service, trimmedTitle, imageUrl, publicId, req.session.user.username]
     );
 
     res.json({ success: true, message: 'Image uploaded successfully', imagePath: imageUrl });
@@ -332,28 +303,15 @@ app.delete('/api/items/:id', requireAuth, async (req, res) => {
     // Delete from database
     await pool.query('DELETE FROM items WHERE id = $1', [id]);
 
-    // Delete from Cloudflare Images if we have an image id
-    if (imageId && CF_ACCOUNT_ID && CF_API_TOKEN) {
+    // Delete from Cloudinary if we have a public id and Cloudinary credentials are available.
+    // Prefer explicit IMG_* env var names used in this project (IMG_CLDNAME, IMG_APIKEY, IMG_APISRT),
+    // or fall back to CLOUDINARY_URL if present.
+    if (imageId && (process.env.CLOUDINARY_URL || (IMG_CLDNAME && IMG_APIKEY && IMG_APISRT))) {
       try {
-        await new Promise((resolve, reject) => {
-          const options = {
-            hostname: 'api.cloudflare.com',
-            path: `/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1/${imageId}`,
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${CF_API_TOKEN}`
-            }
-          };
-          const reqCf = https.request(options, (resCf) => {
-            let data = '';
-            resCf.on('data', (chunk) => data += chunk);
-            resCf.on('end', () => resolve());
-          });
-          reqCf.on('error', (e) => reject(e));
-          reqCf.end();
-        });
+        // Use Cloudinary uploader.destroy to remove the image by its public id.
+        await cloudinary.uploader.destroy(imageId, { resource_type: 'image' });
       } catch (e) {
-        console.error('Failed to delete image from Cloudflare:', e);
+        console.error('Failed to delete image from Cloudinary:', e);
       }
     }
 

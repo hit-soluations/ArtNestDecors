@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-
 const fs = require('fs');
 const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
 
 // Ensure a local .env exists in repo root. If missing, try to copy .env.example
 console.log(__dirname);
@@ -25,6 +26,15 @@ const { seedUsers } = require('../src/seeder');
 const { pool, IMG_CLDNAME, IMG_APIKEY, IMG_APISRT } = require('../src/db');
 
 
+
+if (process.env.CLOUDINARY_URL) {
+  cloudinary.config({ secure: true });
+} else if (IMG_CLDNAME && IMG_APIKEY && IMG_APISRT) {
+  cloudinary.config({ cloud_name: IMG_CLDNAME, api_key: IMG_APIKEY, api_secret: IMG_APISRT, secure: true });
+} else {
+  console.warn('Cloudinary not configured; migration will be skipped if attempted.');
+}
+
 async function run() {
   try {
     console.log('Initializing database schema...');
@@ -36,8 +46,14 @@ async function run() {
     // Optionally migrate existing local uploads into Cloudflare Images
     const migrateFlag = (process.env.MIGRATE_UPLOADS || '').toLowerCase();
     if ((migrateFlag === '1' || migrateFlag === 'true') && IMG_CLDNAME && IMG_APIKEY) {
-      console.log('Starting migration of local /uploads files to Cloudflare Images...');
+      console.log('Starting migration of local /uploads files to Cloudinary...');
       await migrateUploadsToCloudflare();
+    }
+    // Optionally migrate entries that reference Cloudflare/imagedelivery URLs into Cloudinary
+    const migrateCF = (process.env.MIGRATE_CF || process.env.MIGRATE_UPLOADS || '').toLowerCase();
+    if ((migrateCF === '1' || migrateCF === 'true') && IMG_CLDNAME && IMG_APIKEY) {
+      console.log('Starting migration of Cloudflare-hosted URLs to Cloudinary...');
+      await migrateCloudflareToCloudinary();
     }
   } catch (err) {
     console.error('Error during initial database setup:', err);
@@ -69,12 +85,21 @@ async function migrateUploadsToCloudflare() {
       const filename = path.basename(localPath);
       const mimetype = 'application/octet-stream';
       try {
-        const uploaded = await uploadToCloudflare(buffer, filename, mimetype);
-        const imageId = uploaded.id || null;
-        let imageUrl = uploaded.url || null;
-        if (!imageUrl && imageId && IMG_APISRT) {
-          imageUrl = `https://imagedelivery.net/${IMG_APISRT}/${imageId}/public`;
+        if (!cloudinary.config().cloud_name) {
+          console.warn('Skipping migration because Cloudinary is not configured.');
+          break;
         }
+        const uploadResult = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream({ folder: 'artnest' }, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          });
+          streamifier.createReadStream(buffer).pipe(uploadStream);
+        });
+        const imageId = uploadResult.public_id || uploadResult.id || null;
+        // Prefer common secure/url fields (Cloudinary/Cloudflare). If missing, try to construct a reasonable URL
+        // using the IMG_* name (cloud name) so migrated rows still point to an accessible resource.
+        const imageUrl = uploadResult.secure_url || uploadResult.url || uploadResult.uploadURL || (imageId && IMG_CLDNAME ? `https://res.cloudinary.com/${IMG_CLDNAME}/image/upload/${imageId}` : null);
         await pool.query('UPDATE items SET image_path = $1, image_id = $2 WHERE id = $3', [imageUrl || row.image_path, imageId, id]);
         console.log(`Migrated item ${id} -> ${imageUrl || imageId}`);
       } catch (e) {
@@ -87,45 +112,6 @@ async function migrateUploadsToCloudflare() {
 }
 
 function uploadToCloudflare(buffer, filename, mimetype) {
-  return new Promise((resolve, reject) => {
-    const boundary = '--------------------------' + Date.now().toString(16);
-    const crlf = '\r\n';
-    const partHeaders = `--${boundary}${crlf}Content-Disposition: form-data; name="file"; filename="${filename}"${crlf}Content-Type: ${mimetype}${crlf}${crlf}`;
-    const end = `${crlf}--${boundary}--${crlf}`;
-    const body = Buffer.concat([Buffer.from(partHeaders, 'utf8'), buffer, Buffer.from(end, 'utf8')]);
-
-    const options = {
-      hostname: 'api.cloudflare.com',
-      path: `/client/v4/accounts/${IMG_CLDNAME}/images/v1`,
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${IMG_APIKEY}`,
-        'Content-Type': `multipart/form-data; boundary=${boundary}`,
-        'Content-Length': body.length
-      }
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => data += chunk);
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          if (parsed && parsed.success && parsed.result) {
-            const id = parsed.result.id;
-            const url = (parsed.result.variants && parsed.result.variants[0]) || parsed.result.uploadURL || null;
-            resolve({ id, url, raw: parsed });
-          } else {
-            reject(new Error('Cloudflare upload failed: ' + data));
-          }
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-
-    req.on('error', (err) => reject(err));
-    req.write(body);
-    req.end();
-  });
+  // Placeholder kept for compatibility but we now use Cloudinary upload streams in migrateUploadsToCloudflare
+  return Promise.reject(new Error('Legacy Cloudflare upload helper is no longer supported.'));
 }

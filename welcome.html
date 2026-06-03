@@ -950,11 +950,11 @@
                     `;
                 } else {
                     container.innerHTML = items.map(item => {
-                        // Prefer Cloudflare image delivery URL if image_id exists
+                        // Prefer explicit stored image_path first (this covers uploads that returned a delivery URL).
+                        // If image_path is empty but image_id exists, construct a Cloudinary delivery URL using the configured cloud name.
                         let src = item.image_path;
-                        if (item.image_id && window.__CF_ACCOUNT_ID) {
-                            // Cloudflare Images delivery URL pattern: https://imagedelivery.net/<account-id>/<image-id>/public
-                            src = `https://imagedelivery.net/${window.__CF_ACCOUNT_ID}/${item.image_id}/public`;
+                        if ((!src || src === '') && item.image_id && window.__IMG_CLDNAME) {
+                            src = `https://res.cloudinary.com/${window.__IMG_CLDNAME}/image/upload/${item.image_id}`;
                         }
                         return `
                         <div class="item-card">
