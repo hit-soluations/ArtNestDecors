@@ -10,6 +10,7 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const csrf = require('csurf');
 const cors = require('cors');
+const https = require('https');
 
 const app = express();
 
@@ -38,23 +39,9 @@ if (!DATABASE_URL) {
 
 const pool = new Pool({ connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
-
-// Configure multer for image uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const originalExt = path.extname(file.originalname) || '.jpg';
-    cb(null, `${Date.now()}-${Math.random().toString(36).substr(2, 9)}${originalExt}`);
-  }
-});
-
+// Configure multer to use memory storage (no local uploads directory)
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
   fileFilter: (req, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -65,6 +52,60 @@ const upload = multer({
     }
   }
 });
+
+// Cloudflare Images configuration - expects the following env vars to be set:
+// IMG_CLDNAME (Cloudflare account id), IMG_APIKEY (API token)
+const CF_ACCOUNT_ID = process.env.IMG_CLDNAME;
+const CF_API_TOKEN = process.env.IMG_APIKEY;
+if (!CF_ACCOUNT_ID || !CF_API_TOKEN) {
+  console.error('Error: IMG_CLDNAME and IMG_APIKEY environment variables are required for Cloudflare Images uploads.');
+  // Do not exit here to allow other non-upload functionality, but uploads will fail if not set.
+}
+
+// Helper to upload a Buffer to Cloudflare Images
+async function uploadToCloudflare(buffer, filename, mimetype) {
+  return new Promise((resolve, reject) => {
+    const boundary = '--------------------------' + Date.now().toString(16);
+    const crlf = '\r\n';
+    const partHeaders = `--${boundary}${crlf}Content-Disposition: form-data; name="file"; filename="${filename}"${crlf}Content-Type: ${mimetype}${crlf}${crlf}`;
+    const end = `${crlf}--${boundary}--${crlf}`;
+    const body = Buffer.concat([Buffer.from(partHeaders, 'utf8'), buffer, Buffer.from(end, 'utf8')]);
+
+    const options = {
+      hostname: 'api.cloudflare.com',
+      path: `/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1`,
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${CF_API_TOKEN}`,
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': body.length
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => data += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed && parsed.success && parsed.result) {
+            const id = parsed.result.id;
+            const url = (parsed.result.variants && parsed.result.variants[0]) || parsed.result.uploadURL || null;
+            resolve({ id, url, raw: parsed });
+          } else {
+            reject(new Error('Cloudflare upload failed: ' + data));
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+
+    req.on('error', (err) => reject(err));
+    req.write(body);
+    req.end();
+  });
+}
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -137,11 +178,13 @@ async function ensureDatabaseSchema() {
         service_id TEXT NOT NULL,
         title TEXT,
         image_path TEXT NOT NULL,
+        image_id TEXT,
         uploaded_by TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (uploaded_by) REFERENCES users(username) ON DELETE CASCADE
       );
       ALTER TABLE items ADD COLUMN IF NOT EXISTS title TEXT;
+      ALTER TABLE items ADD COLUMN IF NOT EXISTS image_id TEXT;
       CREATE INDEX IF NOT EXISTS idx_items_service ON items(service_id);
       CREATE INDEX IF NOT EXISTS idx_items_uploaded_by ON items(uploaded_by);
     `);
@@ -181,7 +224,7 @@ app.get('/welcome', requireAuth, csrfProtection, (req, res) => {
       return res.status(500).send('Server error');
     }
     const token = req.csrfToken();
-    const injected = data.replace('</head>', `<script>window.__CSRF_TOKEN = ${JSON.stringify(token)};</script></head>`);
+    const injected = data.replace('</head>', `<script>window.__CSRF_TOKEN = ${JSON.stringify(token)}; window.__CF_ACCOUNT_ID = ${JSON.stringify(CF_ACCOUNT_ID || null)};</script></head>`);
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
@@ -200,18 +243,16 @@ app.get('/api/services', requireAuth, (req, res) => {
   res.json(SERVICES);
 });
 
-// API to upload image for a service
+// API to upload image for a service (uploads to Cloudflare Images)
 app.post('/api/items/upload', requireAuth, upload.single('image'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No image provided' });
 
   const { service, title } = req.body;
   const trimmedTitle = title ? title.trim() : '';
   if (!service || !SERVICES.find(s => s.id === service)) {
-    fs.unlinkSync(req.file.path);
     return res.status(400).json({ error: 'Invalid service' });
   }
   if (!trimmedTitle) {
-    fs.unlinkSync(req.file.path);
     return res.status(400).json({ error: 'Image title is required' });
   }
 
@@ -219,20 +260,26 @@ app.post('/api/items/upload', requireAuth, upload.single('image'), async (req, r
     // Check if service already has 10 items
     const countResult = await pool.query('SELECT COUNT(*) as count FROM items WHERE service_id = $1', [service]);
     if (parseInt(countResult.rows[0].count) >= 10) {
-      fs.unlinkSync(req.file.path);
       return res.status(400).json({ error: 'Maximum 10 items allowed per service' });
     }
 
+    // Upload to Cloudflare Images
+    if (!CF_ACCOUNT_ID || !CF_API_TOKEN) {
+      return res.status(500).json({ error: 'Cloudflare Images not configured on server' });
+    }
+
+    const uploadResult = await uploadToCloudflare(req.file.buffer, req.file.originalname || `upload-${Date.now()}.jpg`, req.file.mimetype || 'application/octet-stream');
+    const imageUrl = uploadResult.url || '';
+    const imageId = uploadResult.id || null;
+
     // Insert into database
-    const imagePath = `/uploads/${req.file.filename}`;
     await pool.query(
-      'INSERT INTO items (service_id, title, image_path, uploaded_by) VALUES ($1, $2, $3, $4)',
-      [service, trimmedTitle, imagePath, req.session.user.username]
+      'INSERT INTO items (service_id, title, image_path, image_id, uploaded_by) VALUES ($1, $2, $3, $4, $5)',
+      [service, trimmedTitle, imageUrl, imageId, req.session.user.username]
     );
 
-    res.json({ success: true, message: 'Image uploaded successfully', imagePath });
+    res.json({ success: true, message: 'Image uploaded successfully', imagePath: imageUrl });
   } catch (err) {
-    fs.unlinkSync(req.file.path);
     console.error(err);
     res.status(500).json({ error: 'Failed to upload image' });
   }
@@ -244,34 +291,70 @@ app.get('/api/items/:service', async (req, res) => {
   
   try {
     const result = await pool.query(
-      'SELECT id, title, image_path, created_at FROM items WHERE service_id = $1 ORDER BY created_at DESC',
+      'SELECT id, title, image_path, image_id, created_at FROM items WHERE service_id = $1 ORDER BY created_at DESC',
       [service]
     );
-    res.json(result.rows);
+
+    // Normalize image paths sent to the client:
+    // - If image_path is an absolute URL (starts with http) or already points to Cloudflare, leave as-is.
+    // - If image_path is a site-relative path (e.g. /uploads/...), convert to an absolute URL using the request host so the browser can load it.
+    const normalized = result.rows.map(row => {
+      const out = { ...row };
+      if (out.image_path && typeof out.image_path === 'string') {
+        const p = out.image_path.trim();
+        if (p.startsWith('/')) {
+          // convert to absolute URL for browser consumption
+          out.image_path = `${req.protocol}://${req.get('host')}${p}`;
+        }
+      }
+      return out;
+    });
+
+    res.json(normalized);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch items' });
   }
 });
 
-// API to delete an item
+// API to delete an item (removes from DB and Cloudflare Images)
 app.delete('/api/items/:id', requireAuth, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const itemResult = await pool.query('SELECT image_path FROM items WHERE id = $1', [id]);
+    const itemResult = await pool.query('SELECT image_path, image_id FROM items WHERE id = $1', [id]);
     if (itemResult.rowCount === 0) {
       return res.status(404).json({ error: 'Item not found' });
     }
 
-    const imagePath = path.join(__dirname, itemResult.rows[0].image_path);
-    
+    const imageId = itemResult.rows[0].image_id;
+
     // Delete from database
     await pool.query('DELETE FROM items WHERE id = $1', [id]);
 
-    // Delete physical file
-    if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
+    // Delete from Cloudflare Images if we have an image id
+    if (imageId && CF_ACCOUNT_ID && CF_API_TOKEN) {
+      try {
+        await new Promise((resolve, reject) => {
+          const options = {
+            hostname: 'api.cloudflare.com',
+            path: `/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1/${imageId}`,
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${CF_API_TOKEN}`
+            }
+          };
+          const reqCf = https.request(options, (resCf) => {
+            let data = '';
+            resCf.on('data', (chunk) => data += chunk);
+            resCf.on('end', () => resolve());
+          });
+          reqCf.on('error', (e) => reject(e));
+          reqCf.end();
+        });
+      } catch (e) {
+        console.error('Failed to delete image from Cloudflare:', e);
+      }
     }
 
     res.json({ success: true, message: 'Item deleted successfully' });
