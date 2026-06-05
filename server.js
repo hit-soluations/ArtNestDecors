@@ -16,7 +16,7 @@ const streamifier = require('streamifier');
 
 const app = express();
 // This stops Express from automatically serving index.html
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // Now this route will trigger successfully
 app.get('/', (req, res) => {
