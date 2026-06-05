@@ -16,6 +16,8 @@ const streamifier = require('streamifier');
 
 const app = express();
 
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(cors({
   origin: (origin, callback) => {
     const allowed = ['http://localhost:8080', 'https://artnestdecors.onrender.com'];
@@ -129,7 +131,6 @@ app.get('/welcome.html', (req, res) => {
 });
 
 
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Available services
 const SERVICES = [
