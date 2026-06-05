@@ -128,7 +128,8 @@ app.get('/welcome.html', (req, res) => {
   res.redirect('/welcome');
 });
 
-app.use(express.static(path.join(__dirname)));
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Available services
 const SERVICES = [
