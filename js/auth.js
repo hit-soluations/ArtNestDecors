@@ -38,37 +38,84 @@ function ensureAdminLink(show) {
 /**
  * Validates token states and manages visibility toggles for restricted controls
  */
-function syncAdministrativeSessionUI() {
-    const token = localStorage.getItem('artnest_token');
-    const bodyNode = document.body;
+async function syncAdministrativeSessionUI() {
     const logoutBtn = document.getElementById('logoutBtn');
     const loginBtn = document.getElementById('loginBtn');
     const userBadge = document.getElementById('userBadge');
 
-    if (token) {
-        bodyNode.classList.add('is-admin');
+    try {
+        const response = await fetch('/api/auth/check', {
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Not authenticated');
+        }
+
+        const data = await response.json();
+
+        document.body.classList.add('is-admin');
+
         if (logoutBtn) logoutBtn.style.display = 'inline-block';
         if (loginBtn) loginBtn.style.display = 'none';
-        if (userBadge) userBadge.style.display = 'inline-block';
+        if (userBadge) {
+            userBadge.style.display = 'inline-block';
+            userBadge.textContent = data.user.username;
+        }
+
         ensureAdminLink(true);
-    } else {
-        bodyNode.classList.remove('is-admin');
+
+    } catch (err) {
+        document.body.classList.remove('is-admin');
+
         if (logoutBtn) logoutBtn.style.display = 'none';
         if (loginBtn) loginBtn.style.display = 'inline-block';
         if (userBadge) userBadge.style.display = 'none';
+
+        ensureAdminLink(false);
+    }
+} async function syncAdministrativeSessionUI() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const userBadge = document.getElementById('userBadge');
+
+    try {
+        const response = await fetch('/api/auth/check', {
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Not authenticated');
+        }
+
+        const data = await response.json();
+
+        document.body.classList.add('is-admin');
+
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (userBadge) {
+            userBadge.style.display = 'inline-block';
+            userBadge.textContent = data.user.username;
+        }
+
+        ensureAdminLink(true);
+
+    } catch (err) {
+        document.body.classList.remove('is-admin');
+
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (userBadge) userBadge.style.display = 'none';
+
         ensureAdminLink(false);
     }
 }
-
 /**
  * Purges admin tokens from systemic caching before routing back to root landing layers
  */
 function logoutSession() {
-    localStorage.removeItem('artnest_token');
-    localStorage.removeItem('artnest_user');
-    syncAdministrativeSessionUI();
-    const referencePrefix = window.location.pathname.includes('/services/') ? '../' : '';
-    window.location.href = referencePrefix + 'index.html';
+    window.location.href = '/logout';
 }
 
 // Global shortcut macro command hook (Ctrl + Alt + A) for instant admin access

@@ -200,12 +200,50 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid username or passkey' });
     }
 
-    req.session.user = { id: user.id, username: user.username };
-    return res.json({ success: true, username: user.username });
-  } catch (err) {
+      req.session.regenerate(err => {
+          if (err) {
+              console.error(err);
+              return res.status(500).json({
+                  error: 'Session error'
+              });
+          }
+
+          req.session.user = {
+              id: user.id,
+              username: user.username
+          };
+
+          req.session.save(err => {
+              if (err) {
+                  console.error(err);
+                  return res.status(500).json({
+                      error: 'Session save failed'
+                  });
+              }
+
+              return res.json({
+                  success: true,
+                  username: user.username
+              });
+          });
+      });
+} catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Server error' });
   }
+});
+
+app.get('/api/auth/check', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({
+            authenticated: false
+        });
+    }
+
+    res.json({
+        authenticated: true,
+        user: req.session.user
+    });
 });
 
 // Serve welcome page with injected CSRF token to avoid an extra token fetch
@@ -361,7 +399,7 @@ app.get('/logout', (req, res) => {
 // Global error handler for cleaner JSON responses on upload and CSRF failures
 app.use((err, req, res, next) => {
   if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(400).json({ error: 'File is too large. Maximum size is 5MB.' });
+    return res.status(400).json({ error: 'File is too large. Maximum size is 10MB.' });
   }
 
   if (err instanceof multer.MulterError) {

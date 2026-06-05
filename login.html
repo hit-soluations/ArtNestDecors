@@ -431,8 +431,6 @@
             });
 
             if (response.ok) {
-                localStorage.setItem('artnest_token', 'active');
-                localStorage.setItem('artnest_user', username);
                 window.location.href = '/welcome';
                 return;
             }
