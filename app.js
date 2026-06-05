@@ -15,8 +15,14 @@ const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
 
 const app = express();
+// This stops Express from automatically serving index.html
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
-app.use(express.static(path.join(__dirname, 'public')));
+// Now this route will trigger successfully
+app.get('/', (req, res) => {
+    // You can process custom logic here before sending the file
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.use(cors({
   origin: (origin, callback) => {
