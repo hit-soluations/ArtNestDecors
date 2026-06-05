@@ -2,9 +2,9 @@ const bcrypt = require('bcryptjs');
 const { pool } = require('./db');
 
 const users = [
-  { username: 'srujana', password: 'idly1@dosa' },
+  { username: 'srujana', password: 'idly@dosa' },
   { username: 'akram', password: 'idly1@dosa' },
-  { username: 'admin', password: 'idly1@dosa' }
+  { username: 'admin', password: 'idly2@dosa' }
 ];
 
 async function seedUsers() {
